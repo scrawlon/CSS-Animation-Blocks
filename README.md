@@ -53,7 +53,7 @@ Now that we have a CSS animation, we need an html element to apply it to. Here's
 <script>/* CSS Animation Blocks JavaScript code goes here */</script>
 ```
 
-CSS Animation Blocks hold timeline events in objects with keys representing event times in 'Minutes:Seconds' format. You just require the library and add the timeline.
+CSS Animation Blocks hold timeline events in objects with keys representing event times in 'Minutes:Seconds:Milliseconds' format. You just require the library and add the timeline.
 
 Here's a CSS Animation Block code to run the 'fade-in' animation on the '.box' div:
 
@@ -61,7 +61,7 @@ Here's a CSS Animation Block code to run the 'fade-in' animation on the '.box' d
 var animationBlocks = require('css-animation-blocks');
 var box = document.querySelector('.box');
 var timeline = {
-  '00:01': {
+  '00:01:000': {
     animations: [
       {
         elements: box,
