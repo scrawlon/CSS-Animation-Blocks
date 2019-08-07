@@ -58,20 +58,29 @@ AnimationBlock.prototype.start = function() {
               if ( !keyframeProps[event.animationName] ) {
                 keyframeProps[event.animationName] = getKeyframeProps(styleSheets, event.animationName);
               }
+
+              keyframeProps[event.animationName].forEach((style) => {
+                element.style.removeProperty(style);
+              });
             });
 
             element.addEventListener('animationend', (event) => {
-              const endStyles = window.getComputedStyle(element);
+              const endStyles = getComputedStyle(element);
               let styles = '';
 
-              console.log({endStyles});
+              if ( !keyframeProps[event.animationName] ) {
+                keyframeProps[event.animationName] = getKeyframeProps(styleSheets, event.animationName);
+              }
 
               keyframeProps[event.animationName].forEach((style) => {
-                styles += `${style}:${endStyles[style]}`;
+                styles += `${style}:${endStyles.getPropertyValue(style)}`;
               });
 
               element.style.cssText = styles;
               element.classList.remove(animationClass);
+
+              console.log({event});
+              console.log({styles});
             });
           }
         });
