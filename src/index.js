@@ -58,7 +58,7 @@ AnimationBlock.prototype.start = function() {
 
             if ( animationStyles ) {
               for ( let style in animationStyles ) {
-                styles += `animation-${style}: ${animationStyles[style]}`;
+                styles += `animation-${style}: ${animationStyles[style]};`;
               }
             }
 
