@@ -7,10 +7,15 @@ function AnimationBlock(timeline, config) {
 
     for ( const timeString in timeline ) {
       const time = timeString.split(':');
-      const minutes = Math.floor(time[0] * 60000);
-      const milliseconds = Math.floor(time[1].replace('.', ''));
 
-      output[minutes + milliseconds] = timeline[timeString];
+      if ( time.length && time.length === 2 ) {
+        const minutes = Math.floor(time[0] * 60000);
+        const milliseconds = Math.floor(time[1].replace('.', ''));
+
+        output[minutes + milliseconds] = timeline[timeString];
+      } else {
+        console.log(`Invalid time: ${timeString}`);
+      }
     }
 
     return output;
@@ -24,6 +29,7 @@ AnimationBlock.prototype.start = function() {
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
+  let dom = {};
 
   console.log({timeline});
 
@@ -33,46 +39,54 @@ AnimationBlock.prototype.start = function() {
     if (!startTime) startTime = timestamp;
 
     const elapsedTime = timestamp - startTime;
-    let dom = {};
     let keyframeProps = {};
 
     if ( elapsedTime >= animationTimes[nextAnimationIndex] ) {
       const animations = timeline[animationTimes[nextAnimationIndex]].animations;
 
       animations.forEach((animation) => {
-        const { elementSelector, animationClass } = animation;
+        const { elementSelector, animationClass, animationStyles } = animation;
 
         if ( !elementSelector ) return false;
-
-        if ( !dom[elementSelector] ) {
-          dom[elementSelector] = {};
-        }
+        if ( !dom[elementSelector] ) dom[elementSelector] = {};
 
         dom[elementSelector].elements = document.querySelectorAll(elementSelector);
 
         dom[elementSelector].elements.forEach((element) => {
-          if ( animation.animationClass ) {
+          if ( animationClass ) {
+            let styles = '';
+
+            if ( animationStyles ) {
+              for ( let style in animationStyles ) {
+                styles += `animation-${style}: ${animationStyles[style]}`;
+              }
+            }
+
             element.classList.add(animationClass);
+            element.style.cssText = styles;
 
             element.addEventListener('animationstart', (event) => {
-              if ( !keyframeProps[event.animationName] ) {
-                keyframeProps[event.animationName] = getKeyframeProps(styleSheets, event.animationName);
+              const { animationName } = event;
+
+              if ( !keyframeProps[animationName] ) {
+                keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
 
-              keyframeProps[event.animationName].forEach((style) => {
+              keyframeProps[animationName].forEach((style) => {
                 element.style.removeProperty(style);
               });
             });
 
             element.addEventListener('animationend', (event) => {
+              const { animationName } = event;
               const endStyles = getComputedStyle(element);
               let styles = '';
 
-              if ( !keyframeProps[event.animationName] ) {
-                keyframeProps[event.animationName] = getKeyframeProps(styleSheets, event.animationName);
+              if ( !keyframeProps[animationName] ) {
+                keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
 
-              keyframeProps[event.animationName].forEach((style) => {
+              keyframeProps[animationName].forEach((style) => {
                 styles += `${style}:${endStyles.getPropertyValue(style)}`;
               });
 
@@ -93,25 +107,25 @@ AnimationBlock.prototype.start = function() {
       requestAnimationFrame(animation);
     }
   }
-}
 
-function getKeyframeProps(styleSheets, rule) {
-  let props = [];
+  function getKeyframeProps(styleSheets, rule) {
+    let props = [];
 
-  for ( let styleSheet of styleSheets ) {
-    const { rules } = styleSheet;
+    for ( let styleSheet of styleSheets ) {
+      const { rules } = styleSheet;
 
-    for ( let rule of rules ) {
-      if ( rule.type === 7 ) {
-        const { cssText } = rule;
-        const cssProps = [...new Set(cssText.match(/\w+(?=:)/g))];
+      for ( let rule of rules ) {
+        if ( rule.type === 7 ) {
+          const { cssText } = rule;
+          const cssProps = [...new Set(cssText.match(/\w+(?=:)/g))];
 
-        props = props.concat(cssProps);
+          props = props.concat(cssProps);
+        }
       }
     }
-  }
 
-  return props;
+    return props;
+  }
 }
 
 export { AnimationBlock };
