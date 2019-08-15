@@ -64,12 +64,15 @@ AnimationBlock.prototype.start = function() {
               const { animationName } = event;
 
               // console.log({'animation start': animationName});
+
+              /* Keep track of CSS properties of current animation's keyframes */
               if ( !dom[elementSelector].keyframeProps[animationName] ) {
                 dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
               // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
               // console.log({domElementObject: dom[elementSelector]});
 
+              /* remove inline styles associated that might override current animation */
               dom[elementSelector].keyframeProps[animationName].forEach((style) => {
                 element.style.removeProperty(style);
               });
@@ -88,6 +91,7 @@ AnimationBlock.prototype.start = function() {
 
               // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
 
+              /* Hold animated CSS property values after animation is removed from element */
               dom[elementSelector].keyframeProps[animationName].forEach((style) => {
                 const cssValue = endStyles.getPropertyValue(style);
                 console.log({style});
@@ -96,7 +100,6 @@ AnimationBlock.prototype.start = function() {
                 element.style[style] = cssValue;
               });
 
-              /* remove this animation */
               const remainingAnimations = getRemainingAnimations(element, animationName);
               // console.log({currentAnimation: animationName});
 
