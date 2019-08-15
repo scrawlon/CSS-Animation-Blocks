@@ -70,9 +70,9 @@ AnimationBlock.prototype.start = function() {
               // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
               // console.log({domElementObject: dom[elementSelector]});
 
-              // dom[elementSelector].keyframeProps[animationName].forEach((style) => {
-              //   element.style.removeProperty(style);
-              // });
+              dom[elementSelector].keyframeProps[animationName].forEach((style) => {
+                element.style.removeProperty(style);
+              });
             });
 
             element.addEventListener('animationend', (event) => {
