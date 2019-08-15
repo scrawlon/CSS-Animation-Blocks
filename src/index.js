@@ -71,7 +71,7 @@ AnimationBlock.prototype.start = function() {
             element.addEventListener('animationstart', (event) => {
               const { animationName } = event;
 
-              // console.log({'animation start': animationName});
+              console.log({'animation start': animationName});
 
               /* Keep track of CSS properties of current animation's keyframes */
               if ( !dom[elementSelector].keyframeProps[animationName] ) {
@@ -104,8 +104,8 @@ AnimationBlock.prototype.start = function() {
               /* Hold animated CSS property values after animation is removed from element */
               dom[elementSelector].keyframeProps[animationName].forEach((style) => {
                 const cssValue = endStyles.getPropertyValue(style);
-                console.log({style});
-                console.log({cssValue});
+                // console.log({style});
+                // console.log({cssValue});
                 // styles += `${style}:${cssValue};`;
                 element.style[style] = cssValue;
               });
