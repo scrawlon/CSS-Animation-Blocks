@@ -39,62 +39,77 @@ AnimationBlock.prototype.start = function() {
     if (!startTime) startTime = timestamp;
 
     const elapsedTime = timestamp - startTime;
-    let keyframeProps = {};
+    const nextAnimationTime = animationTimes[nextAnimationIndex];
 
-    if ( elapsedTime >= animationTimes[nextAnimationIndex] ) {
-      const animations = timeline[animationTimes[nextAnimationIndex]].animations;
+    if ( elapsedTime >= nextAnimationTime ) {
+      const { animations } = timeline[nextAnimationTime];
+      // console.log({timestamp});
 
       animations.forEach((animation) => {
-        const { elementSelector, animationClass, animationStyles } = animation;
+        const { elementSelector, animationCSS } = animation;
 
         if ( !elementSelector ) return false;
         if ( !dom[elementSelector] ) dom[elementSelector] = {};
 
         dom[elementSelector].elements = document.querySelectorAll(elementSelector);
+        dom[elementSelector].animations = [];
+        dom[elementSelector].keyframeProps = [];
 
         dom[elementSelector].elements.forEach((element) => {
-          if ( animationClass ) {
-            let styles = '';
-
-            if ( animationStyles ) {
-              for ( let style in animationStyles ) {
-                styles += `animation-${style}: ${animationStyles[style]};`;
-              }
-            }
-
-            element.classList.add(animationClass);
-            element.style.cssText = styles;
+          if ( animationCSS ) {
+            dom[elementSelector].animations.push(animationCSS);
+            element.style.animation = dom[elementSelector].animations.join(',');
 
             element.addEventListener('animationstart', (event) => {
               const { animationName } = event;
 
-              if ( !keyframeProps[animationName] ) {
-                keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+              // console.log({'animation start': animationName});
+              if ( !dom[elementSelector].keyframeProps[animationName] ) {
+                dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
+              // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
+              // console.log({domElementObject: dom[elementSelector]});
 
-              keyframeProps[animationName].forEach((style) => {
-                element.style.removeProperty(style);
-              });
+              // dom[elementSelector].keyframeProps[animationName].forEach((style) => {
+              //   element.style.removeProperty(style);
+              // });
             });
 
             element.addEventListener('animationend', (event) => {
               const { animationName } = event;
               const endStyles = getComputedStyle(element);
-              let styles = '';
+              // let styles = '';
 
-              if ( !keyframeProps[animationName] ) {
-                keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-              }
+              // console.log({'animation end': animationName});
 
-              keyframeProps[animationName].forEach((style) => {
-                styles += `${style}:${endStyles.getPropertyValue(style)}`;
+              // if ( !dom[elementSelector].keyframeProps[animationName] ) {
+              //   dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+              // }
+
+              // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
+
+              dom[elementSelector].keyframeProps[animationName].forEach((style) => {
+                const cssValue = endStyles.getPropertyValue(style);
+                console.log({style});
+                console.log({cssValue});
+                // styles += `${style}:${cssValue};`;
+                element.style[style] = cssValue;
               });
 
-              element.style.cssText = styles;
-              element.classList.remove(animationClass);
+              /* remove this animation */
+              const remainingAnimations = getRemainingAnimations(element, animationName);
+              // console.log({currentAnimation: animationName});
 
-              console.log({event});
-              console.log({styles});
+              element.style.animation = remainingAnimations;
+              // console.log({currentAnimation: element.style.animation});
+
+              // element.style.cssText = styles;
+              // element.classList.remove(animationClass);
+
+              // console.log({event});
+              // console.log({styles});
+              // console.log({keyframeProps});
+              // console.log({dom});
             });
           }
         });
@@ -108,14 +123,21 @@ AnimationBlock.prototype.start = function() {
     }
   }
 
-  function getKeyframeProps(styleSheets, rule) {
+  function getRemainingAnimations(element, animationName) {
+    const animations = element.style.animation.split(',');
+    return animations.filter((animation) => {
+      return !animation.match(animationName);
+    }).join(',');
+  }
+
+  function getKeyframeProps(styleSheets, animationName) {
     let props = [];
 
     for ( let styleSheet of styleSheets ) {
       const { rules } = styleSheet;
 
       for ( let rule of rules ) {
-        if ( rule.type === 7 ) {
+        if ( rule.type === 7 && rule.name === animationName ) {
           const { cssText } = rule;
           const cssProps = [...new Set(cssText.match(/\w+(?=:)/g))];
 
