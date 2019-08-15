@@ -57,8 +57,16 @@ AnimationBlock.prototype.start = function() {
 
         dom[elementSelector].elements.forEach((element) => {
           if ( animationCSS ) {
+            const runningAnimations = element.style.animation;
             dom[elementSelector].animations.push(animationCSS);
-            element.style.animation = dom[elementSelector].animations.join(',');
+
+            console.log({runningAnimations});
+
+            if ( runningAnimations ) {
+              element.style.animation = `${runningAnimations},${dom[elementSelector].animations.join(',')}`;
+            } else {
+              element.style.animation = `${dom[elementSelector].animations.join(',')}`;
+            }
 
             element.addEventListener('animationstart', (event) => {
               const { animationName } = event;
@@ -76,6 +84,8 @@ AnimationBlock.prototype.start = function() {
               dom[elementSelector].keyframeProps[animationName].forEach((style) => {
                 element.style.removeProperty(style);
               });
+
+              console.log({animations: dom[elementSelector].animations});
             });
 
             element.addEventListener('animationend', (event) => {
