@@ -95,9 +95,9 @@ AnimationBlock.prototype.start = function() {
 
               // console.log({'animation end': animationName});
 
-              // if ( !dom[elementSelector].keyframeProps[animationName] ) {
-              //   dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-              // }
+              if ( !dom[elementSelector].keyframeProps[animationName] ) {
+                dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+              }
 
               // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
 
