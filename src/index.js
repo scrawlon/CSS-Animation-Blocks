@@ -58,11 +58,11 @@ AnimationBlock.prototype.start = function() {
         dom[elementSelector].elements.forEach((element) => {
           if ( animationCSS ) {
             const runningAnimations = element.style.animation;
+
             dom[elementSelector].animations.push(animationCSS);
 
-            console.log({runningAnimations});
-
             if ( runningAnimations ) {
+              console.log({runningAnimations});
               element.style.animation = `${runningAnimations},${dom[elementSelector].animations.join(',')}`;
             } else {
               element.style.animation = `${dom[elementSelector].animations.join(',')}`;
@@ -71,7 +71,7 @@ AnimationBlock.prototype.start = function() {
             element.addEventListener('animationstart', (event) => {
               const { animationName } = event;
 
-              console.log({'animation start': animationName});
+              // console.log({'animation start': animationName});
 
               /* Keep track of CSS properties of current animation's keyframes */
               if ( !dom[elementSelector].keyframeProps[animationName] ) {
@@ -85,13 +85,12 @@ AnimationBlock.prototype.start = function() {
                 element.style.removeProperty(style);
               });
 
-              console.log({animations: dom[elementSelector].animations});
+              // console.log({animations: dom[elementSelector].animations});
             });
 
             element.addEventListener('animationend', (event) => {
               const { animationName } = event;
               const endStyles = getComputedStyle(element);
-              // let styles = '';
 
               // console.log({'animation end': animationName});
 
@@ -99,14 +98,11 @@ AnimationBlock.prototype.start = function() {
                 dom[elementSelector].keyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
 
-              // console.log({currentAnimations: dom[elementSelector].keyframeProps[animationName]});
-
               /* Hold animated CSS property values after animation is removed from element */
               dom[elementSelector].keyframeProps[animationName].forEach((style) => {
                 const cssValue = endStyles.getPropertyValue(style);
-                // console.log({style});
-                // console.log({cssValue});
-                // styles += `${style}:${cssValue};`;
+                console.log({style});
+                console.log({cssValue});
                 element.style[style] = cssValue;
               });
 
@@ -114,15 +110,7 @@ AnimationBlock.prototype.start = function() {
               // console.log({currentAnimation: animationName});
 
               element.style.animation = remainingAnimations;
-              // console.log({currentAnimation: element.style.animation});
-
-              // element.style.cssText = styles;
               // element.classList.remove(animationClass);
-
-              // console.log({event});
-              // console.log({styles});
-              // console.log({keyframeProps});
-              // console.log({dom});
             });
           }
         });
