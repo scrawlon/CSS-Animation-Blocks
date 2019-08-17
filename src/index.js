@@ -92,11 +92,13 @@ AnimationBlock.prototype.start = function() {
 
               /* remove inline styles associated that might override current animation */
               currentKeyframeProps[animationName].forEach((style) => {
-                console.log({style});
+                dom[elementSelector].wrapNext = false;
+                // console.log({style});
                 if ( style === 'transform' ) {
                   dom[elementSelector].wrapNext = true;
-                } else {
-                  dom[elementSelector].wrapNext = false;
+                }
+
+                if ( !dom[elementSelector].wrapNext ) {
                   element.style.removeProperty(style);
                 }
 
@@ -120,6 +122,7 @@ AnimationBlock.prototype.start = function() {
                 const cssValue = endStyles.getPropertyValue(style);
                 console.log({style});
                 console.log({cssValue});
+                console.log({element});
 
                 if ( style !== 'transform' ) element.style[style] = cssValue;
               });
