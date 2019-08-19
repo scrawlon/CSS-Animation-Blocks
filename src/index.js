@@ -49,10 +49,9 @@ AnimationBlock.prototype.start = function() {
 
         if ( !elementSelector ) return false;
         if ( !dom[elementSelector] ) dom[elementSelector] = {};
+        if ( !dom[elementSelector].wrapNext ) dom[elementSelector].wrapNext = false;
 
         dom[elementSelector].elements = document.querySelectorAll(elementSelector);
-
-        if ( !dom[elementSelector].wrapNext ) dom[elementSelector].wrapNext = false;
 
         dom[elementSelector].elements.forEach((element, index) => {
           if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
@@ -67,16 +66,21 @@ AnimationBlock.prototype.start = function() {
             element.parentNode.insertBefore(currentWrapper, element);
             currentWrapper.appendChild(element);
             element = currentWrapper;
+
+            // console.log({wrapNext: dom[elementSelector].wrapNext});
           }
 
           if ( runningAnimations && !currentWrapper ) {
+            // console.log({runningAnimations, currentAnimations});
             element.style.animation = `${runningAnimations},${currentAnimations}`;
           } else {
+            // console.log({currentAnimations});
             element.style.animation = `${currentAnimations}`;
           }
 
           element.addEventListener('animationstart', (event) => {
             const { animationName } = event;
+            console.log({animationName});
 
             /* Keep track of CSS properties of current animation's keyframes */
             if ( !currentKeyframeProps[animationName] ) {
@@ -103,10 +107,12 @@ AnimationBlock.prototype.start = function() {
 
             /* Hold animated CSS property values after animation is removed from element */
             currentKeyframeProps[animationName].forEach((style) => {
+              // console.log({style});
               element.style[style] = endStyles.getPropertyValue(style);
             });
 
             const remainingAnimations = getRemainingAnimations(element, animationName);
+            // console.log({remainingAnimations});
 
             element.style.animation = remainingAnimations;
             // element.classList.remove(animationClass);
