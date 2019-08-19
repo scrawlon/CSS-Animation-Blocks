@@ -63,6 +63,7 @@ AnimationBlock.prototype.start = function() {
             currentAnimations.push(animationCSS);
 
             console.log({wrapNext: dom[elementSelector].wrapNext});
+            console.log({currentAnimations});
 
             if ( dom[elementSelector].wrapNext ) {
               currentWrapper = document.createElement('div');
@@ -93,7 +94,9 @@ AnimationBlock.prototype.start = function() {
               /* remove inline styles associated that might override current animation */
               currentKeyframeProps[animationName].forEach((style) => {
                 dom[elementSelector].wrapNext = false;
-                // console.log({style});
+
+                console.log({element, style});
+
                 if ( style === 'transform' ) {
                   dom[elementSelector].wrapNext = true;
                 }
@@ -101,7 +104,6 @@ AnimationBlock.prototype.start = function() {
                 if ( !dom[elementSelector].wrapNext ) {
                   element.style.removeProperty(style);
                 }
-
               });
 
               // console.log({animations: dom[elementSelector].animations});
@@ -111,6 +113,7 @@ AnimationBlock.prototype.start = function() {
               const { animationName } = event;
               const endStyles = getComputedStyle(element);
 
+              console.log({element, endStyles})
               // console.log({'animation end': animationName});
 
               if ( !currentKeyframeProps[animationName] ) {
@@ -120,11 +123,10 @@ AnimationBlock.prototype.start = function() {
               /* Hold animated CSS property values after animation is removed from element */
               currentKeyframeProps[animationName].forEach((style) => {
                 const cssValue = endStyles.getPropertyValue(style);
-                console.log({style});
-                console.log({cssValue});
-                console.log({element});
 
-                if ( style !== 'transform' ) element.style[style] = cssValue;
+                if ( style === 'transform' ) console.log({element, style, cssValue});
+
+                element.style[style] = cssValue;
               });
 
               const remainingAnimations = getRemainingAnimations(element, animationName);
