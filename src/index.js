@@ -49,30 +49,12 @@ AnimationBlock.prototype.start = function() {
 
         if ( !elementSelector ) return false;
         if ( !dom[elementSelector] ) dom[elementSelector] = {};
-        if ( !dom[elementSelector].wrapNext ) dom[elementSelector].wrapNext = false;
+        if ( !dom[elementSelector].wrapLevel ) dom[elementSelector].wrapLevel = 0;
         if ( !dom[elementSelector].elements ) {
           const elements = document.querySelectorAll(elementSelector);
 
           dom[elementSelector].elements = elements;
           getWrappedElements(elementSelector, 3);
-        }
-
-        function getWrappedElements(elementSelector, totalWrappers) {
-          const elements = document.querySelectorAll(elementSelector);
-          let count = 0;
-
-          elements.forEach((element) => {
-            let currentWrapper;
-
-            while ( count < totalWrappers ) {
-              currentWrapper = document.createElement('div');
-              currentWrapper.classList.add('cab-transform-wrapper')
-              element.parentNode.insertBefore(currentWrapper, element);
-              currentWrapper.appendChild(element);
-              count++;
-            }
-
-          });
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
@@ -81,19 +63,23 @@ AnimationBlock.prototype.start = function() {
           const runningAnimations = element.style.animation;
           let currentAnimations = animationCSS.join(',');
           let currentKeyframeProps = {};
-          let currentWrapper;
 
-          if ( dom[elementSelector].wrapNext ) {
-            const parent = element.parentElement;
+          if ( dom[elementSelector].wrapLevel ) {
+            let currentElement = element;
+            let count = 0;
 
-            if ( parent.classList.contains('cab-transform-wrapper') ) {
-              element = parent;
+            while ( count < dom[elementSelector].wrapLevel ) {
+              currentElement = currentElement.parentElement;
+              console.log({currentElement});
+              count++;
             }
-            // element = currentWrapper;
-            // console.log({wrapNext: dom[elementSelector].wrapNext});
+
+            if ( currentElement.classList.contains('cab-transform-wrapper') ) {
+              element = currentElement;
+            }
           }
 
-          if ( runningAnimations && !currentWrapper ) {
+          if ( runningAnimations ) {
             // console.log({runningAnimations, currentAnimations});
             element.style.animation = `${runningAnimations},${currentAnimations}`;
           } else {
@@ -113,7 +99,7 @@ AnimationBlock.prototype.start = function() {
             /* remove inline styles associated that might override current animation */
             currentKeyframeProps[animationName].forEach((style) => {
               if ( style === 'transform' ) {
-                dom[elementSelector].wrapNext = true;
+                dom[elementSelector].wrapLevel++;
               } else {
                 element.style.removeProperty(style);
               }
@@ -175,6 +161,23 @@ AnimationBlock.prototype.start = function() {
     }
 
     return props;
+  }
+
+  function getWrappedElements(elementSelector, totalWrappers) {
+    const elements = document.querySelectorAll(elementSelector);
+    let count = 0;
+
+    elements.forEach((element) => {
+      let currentWrapper;
+
+      while ( count < totalWrappers ) {
+        currentWrapper = document.createElement('div');
+        currentWrapper.classList.add('cab-transform-wrapper')
+        element.parentNode.insertBefore(currentWrapper, element);
+        currentWrapper.appendChild(element);
+        count++;
+      }
+    });
   }
 }
 
