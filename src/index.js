@@ -50,8 +50,30 @@ AnimationBlock.prototype.start = function() {
         if ( !elementSelector ) return false;
         if ( !dom[elementSelector] ) dom[elementSelector] = {};
         if ( !dom[elementSelector].wrapNext ) dom[elementSelector].wrapNext = false;
+        if ( !dom[elementSelector].elements ) {
+          const elements = document.querySelectorAll(elementSelector);
 
-        dom[elementSelector].elements = document.querySelectorAll(elementSelector);
+          dom[elementSelector].elements = elements;
+          getWrappedElements(elementSelector, 3);
+        }
+
+        function getWrappedElements(elementSelector, totalWrappers) {
+          const elements = document.querySelectorAll(elementSelector);
+          let count = 0;
+
+          elements.forEach((element) => {
+            let currentWrapper;
+
+            while ( count < totalWrappers ) {
+              currentWrapper = document.createElement('div');
+              currentWrapper.classList.add('cab-transform-wrapper')
+              element.parentNode.insertBefore(currentWrapper, element);
+              currentWrapper.appendChild(element);
+              count++;
+            }
+
+          });
+        }
 
         dom[elementSelector].elements.forEach((element, index) => {
           if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
@@ -62,11 +84,12 @@ AnimationBlock.prototype.start = function() {
           let currentWrapper;
 
           if ( dom[elementSelector].wrapNext ) {
-            currentWrapper = document.createElement('div');
-            element.parentNode.insertBefore(currentWrapper, element);
-            currentWrapper.appendChild(element);
-            element = currentWrapper;
+            const parent = element.parentElement;
 
+            if ( parent.classList.contains('cab-transform-wrapper') ) {
+              element = parent;
+            }
+            // element = currentWrapper;
             // console.log({wrapNext: dom[elementSelector].wrapNext});
           }
 
