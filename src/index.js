@@ -56,7 +56,7 @@ AnimationBlock.prototype.start = function() {
           const elements = document.querySelectorAll(elementSelector);
 
           dom[elementSelector].elements = elements;
-          getWrappedElements(elementSelector, 4);
+          getWrappedElements(elementSelector, 8);
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
@@ -186,6 +186,8 @@ AnimationBlock.prototype.start = function() {
         currentWrapper.appendChild(element);
         count++;
       }
+
+      count = 0;
     });
   }
 }
