@@ -23,6 +23,7 @@ function AnimationBlock(timeline, config) {
 }
 
 AnimationBlock.prototype.start = function() {
+  const config = this.config;
   const styleSheets = document.styleSheets;
   const timeline = this.processedTimeline();
   const animationTimes = Object.keys(timeline);
@@ -32,6 +33,7 @@ AnimationBlock.prototype.start = function() {
   let dom = {};
 
   console.log({timeline});
+  console.log({config: this.config});
 
   requestAnimationFrame(animation);
 
@@ -54,7 +56,7 @@ AnimationBlock.prototype.start = function() {
           const elements = document.querySelectorAll(elementSelector);
 
           dom[elementSelector].elements = elements;
-          getWrappedElements(elementSelector, 3);
+          getWrappedElements(elementSelector, 4);
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
@@ -79,7 +81,7 @@ AnimationBlock.prototype.start = function() {
             }
           }
 
-          if ( runningAnimations ) {
+          if ( runningAnimations && !dom[elementSelector].wrapLevel ) {
             // console.log({runningAnimations, currentAnimations});
             element.style.animation = `${runningAnimations},${currentAnimations}`;
           } else {
@@ -134,6 +136,13 @@ AnimationBlock.prototype.start = function() {
 
     if ( nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
+    } else if ( config.loop ) {
+      console.log('loopnow');
+
+      /* loop code goes here */
+      // startTime = timestamp;
+      // nextAnimationIndex = 0;
+      // requestAnimationFrame(animation);
     }
   }
 
