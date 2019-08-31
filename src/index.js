@@ -48,19 +48,13 @@ AnimationBlock.prototype.start = function() {
         const { elementSelector, animationCSS } = animation;
 
         if ( !elementSelector ) return false;
+        if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
 
         if ( !dom[elementSelector] ) {
-          dom[elementSelector] = {
-            elements: document.querySelectorAll(elementSelector),
-            transformWrapLevel: 0
-          };
-
-          getWrappedElements(elementSelector, transformCount);
+          cacheDomElement(elementSelector);
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
-          if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
-
           const runningAnimations = element.style.animation;
           const currentAnimations = animationCSS.join(',');
           let currentKeyframeProps = {};
@@ -69,11 +63,9 @@ AnimationBlock.prototype.start = function() {
             element = getTransformWrapElement(element, dom[elementSelector].transformWrapLevel);
           }
 
-          if ( runningAnimations && !dom[elementSelector].transformWrapLevel ) {
-            element.style.animation = `${runningAnimations},${currentAnimations}`;
-          } else {
-            element.style.animation = `${currentAnimations}`;
-          }
+          element.style.animation = runningAnimations && !dom[elementSelector].transformWrapLevel
+            ? `${runningAnimations},${currentAnimations}`
+            : `${currentAnimations}`;
 
           element.addEventListener('animationstart', (event) => {
             const { animationName } = event;
@@ -87,6 +79,7 @@ AnimationBlock.prototype.start = function() {
             /* remove inline styles associated that might override current animation */
             currentKeyframeProps[animationName].forEach((style) => {
               if ( style === 'transform' && dom[elementSelector].transformWrapLevel < transformCount ) {
+                element.dataset.animationName = animationName;
                 dom[elementSelector].transformWrapLevel++;
               }
 
@@ -156,7 +149,7 @@ AnimationBlock.prototype.start = function() {
     return props;
   }
 
-  function getWrappedElements(elementSelector, totalWrappers) {
+  function createTransformWrappers(elementSelector, totalWrappers) {
     const elements = document.querySelectorAll(elementSelector);
     let count = 0;
 
@@ -174,22 +167,33 @@ AnimationBlock.prototype.start = function() {
       count = 0;
     });
   }
-}
 
-function getTransformWrapElement(element, transformWrapLevel) {
-  let currentElement = element;
-  let count = 0;
+  function getTransformWrapElement(element, transformWrapLevel) {
+    let currentElement = element;
+    let count = 0;
 
-  while ( count < transformWrapLevel ) {
-    currentElement = currentElement.parentElement;
-    count++;
+    while ( count < transformWrapLevel ) {
+      currentElement = currentElement.parentElement;
+      count++;
+    }
+
+    if ( currentElement.classList.contains('cab-transform-wrapper') ) {
+      console.log(transformWrapLevel);
+      return currentElement;
+    }
+
+    return element;
   }
 
-  if ( currentElement.classList.contains('cab-transform-wrapper') ) {
-    return currentElement;
+  function cacheDomElement(elementSelector) {
+    dom[elementSelector] = {
+      elements: document.querySelectorAll(elementSelector),
+      transformWrapLevel: 0
+    };
+
+    createTransformWrappers(elementSelector, transformCount);
   }
 
-  return element;
 }
 
 export { AnimationBlock };
