@@ -24,6 +24,7 @@ function AnimationBlock(timeline, config) {
 
 AnimationBlock.prototype.start = function() {
   const config = this.config;
+  const transformCount = config.transformCount ? config.transformCount : 1;
   const styleSheets = document.styleSheets;
   const timeline = this.processedTimeline();
   const animationTimes = Object.keys(timeline);
@@ -40,52 +41,37 @@ AnimationBlock.prototype.start = function() {
   function animation(timestamp) {
     if (!startTime) startTime = timestamp;
 
-    const elapsedTime = timestamp - startTime;
-    const nextAnimationTime = animationTimes[nextAnimationIndex];
-
-    if ( elapsedTime >= nextAnimationTime ) {
-      const { animations } = timeline[nextAnimationTime];
+    if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
+      const { animations } = timeline[animationTimes[nextAnimationIndex]];
 
       animations.forEach((animation) => {
         const { elementSelector, animationCSS } = animation;
 
         if ( !elementSelector ) return false;
-        if ( !dom[elementSelector] ) dom[elementSelector] = {};
-        if ( !dom[elementSelector].wrapLevel ) dom[elementSelector].wrapLevel = 0;
-        if ( !dom[elementSelector].elements ) {
-          const elements = document.querySelectorAll(elementSelector);
 
-          dom[elementSelector].elements = elements;
-          getWrappedElements(elementSelector, 8);
+        if ( !dom[elementSelector] ) {
+          dom[elementSelector] = {
+            elements: document.querySelectorAll(elementSelector),
+            transformWrapLevel: 0
+          };
+
+          getWrappedElements(elementSelector, transformCount);
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
           if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
 
           const runningAnimations = element.style.animation;
-          let currentAnimations = animationCSS.join(',');
+          const currentAnimations = animationCSS.join(',');
           let currentKeyframeProps = {};
 
-          if ( dom[elementSelector].wrapLevel ) {
-            let currentElement = element;
-            let count = 0;
-
-            while ( count < dom[elementSelector].wrapLevel ) {
-              currentElement = currentElement.parentElement;
-              console.log({currentElement});
-              count++;
-            }
-
-            if ( currentElement.classList.contains('cab-transform-wrapper') ) {
-              element = currentElement;
-            }
+          if ( dom[elementSelector].transformWrapLevel ) {
+            element = getTransformWrapElement(element, dom[elementSelector].transformWrapLevel);
           }
 
-          if ( runningAnimations && !dom[elementSelector].wrapLevel ) {
-            // console.log({runningAnimations, currentAnimations});
+          if ( runningAnimations && !dom[elementSelector].transformWrapLevel ) {
             element.style.animation = `${runningAnimations},${currentAnimations}`;
           } else {
-            // console.log({currentAnimations});
             element.style.animation = `${currentAnimations}`;
           }
 
@@ -100,17 +86,18 @@ AnimationBlock.prototype.start = function() {
 
             /* remove inline styles associated that might override current animation */
             currentKeyframeProps[animationName].forEach((style) => {
-              if ( style === 'transform' ) {
-                dom[elementSelector].wrapLevel++;
-              } else {
-                element.style.removeProperty(style);
+              if ( style === 'transform' && dom[elementSelector].transformWrapLevel < transformCount ) {
+                dom[elementSelector].transformWrapLevel++;
               }
+
+              element.style.removeProperty(style);
             });
           });
 
           element.addEventListener('animationend', (event) => {
             const { animationName } = event;
             const endStyles = getComputedStyle(element);
+            const remainingAnimations = getRemainingAnimations(element, animationName);
 
             if ( !currentKeyframeProps[animationName] ) {
               currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
@@ -118,12 +105,8 @@ AnimationBlock.prototype.start = function() {
 
             /* Hold animated CSS property values after animation is removed from element */
             currentKeyframeProps[animationName].forEach((style) => {
-              // console.log({style});
               element.style[style] = endStyles.getPropertyValue(style);
             });
-
-            const remainingAnimations = getRemainingAnimations(element, animationName);
-            // console.log({remainingAnimations});
 
             element.style.animation = remainingAnimations;
             // element.classList.remove(animationClass);
@@ -142,6 +125,7 @@ AnimationBlock.prototype.start = function() {
       /* loop code goes here */
       // startTime = timestamp;
       // nextAnimationIndex = 0;
+      // dom = {};
       // requestAnimationFrame(animation);
     }
   }
@@ -190,6 +174,22 @@ AnimationBlock.prototype.start = function() {
       count = 0;
     });
   }
+}
+
+function getTransformWrapElement(element, transformWrapLevel) {
+  let currentElement = element;
+  let count = 0;
+
+  while ( count < transformWrapLevel ) {
+    currentElement = currentElement.parentElement;
+    count++;
+  }
+
+  if ( currentElement.classList.contains('cab-transform-wrapper') ) {
+    return currentElement;
+  }
+
+  return element;
 }
 
 export { AnimationBlock };
