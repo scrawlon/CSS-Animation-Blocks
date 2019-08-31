@@ -59,11 +59,11 @@ AnimationBlock.prototype.start = function() {
           const currentAnimations = animationCSS.join(',');
           let currentKeyframeProps = {};
 
-          if ( dom[elementSelector].transformWrapLevel ) {
-            element = getTransformWrapElement(element, dom[elementSelector].transformWrapLevel);
+          if ( dom[elementSelector].transformWrapLevel[index] ) {
+            element = getTransformWrapElement(element, dom[elementSelector].transformWrapLevel[index]);
           }
 
-          element.style.animation = runningAnimations && !dom[elementSelector].transformWrapLevel
+          element.style.animation = runningAnimations && !dom[elementSelector].transformWrapLevel[index]
             ? `${runningAnimations},${currentAnimations}`
             : `${currentAnimations}`;
 
@@ -78,9 +78,9 @@ AnimationBlock.prototype.start = function() {
 
             /* remove inline styles associated that might override current animation */
             currentKeyframeProps[animationName].forEach((style) => {
-              if ( style === 'transform' && dom[elementSelector].transformWrapLevel < transformCount ) {
+              if ( style === 'transform' && dom[elementSelector].transformWrapLevel[index] < transformCount ) {
                 element.dataset.animationName = animationName;
-                dom[elementSelector].transformWrapLevel++;
+                dom[elementSelector].transformWrapLevel[index]++;
               }
 
               element.style.removeProperty(style);
@@ -158,7 +158,7 @@ AnimationBlock.prototype.start = function() {
 
       while ( count < totalWrappers ) {
         currentWrapper = document.createElement('div');
-        currentWrapper.classList.add('cab-transform-wrapper')
+        currentWrapper.classList.add('transform-wrapper')
         element.parentNode.insertBefore(currentWrapper, element);
         currentWrapper.appendChild(element);
         count++;
@@ -177,7 +177,7 @@ AnimationBlock.prototype.start = function() {
       count++;
     }
 
-    if ( currentElement.classList.contains('cab-transform-wrapper') ) {
+    if ( currentElement.classList.contains('transform-wrapper') ) {
       console.log(transformWrapLevel);
       return currentElement;
     }
@@ -186,9 +186,10 @@ AnimationBlock.prototype.start = function() {
   }
 
   function cacheDomElement(elementSelector) {
+    const elements =document.querySelectorAll(elementSelector)
     dom[elementSelector] = {
-      elements: document.querySelectorAll(elementSelector),
-      transformWrapLevel: 0
+      elements: elements,
+      transformWrapLevel: Array(elements.length).fill(0)
     };
 
     createTransformWrappers(elementSelector, transformCount);
