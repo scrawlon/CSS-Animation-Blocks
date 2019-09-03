@@ -78,9 +78,14 @@ AnimationBlock.prototype.start = function() {
 
             /* remove inline styles associated that might override current animation */
             currentKeyframeProps[animationName].forEach((style) => {
-              if ( style === 'transform' && dom[elementSelector].transformWrapLevel[index] < transformCount ) {
+              if ( style === 'transform' ) {
+                if ( dom[elementSelector].transformWrapLevel[index] < transformCount ) {
+                  dom[elementSelector].transformWrapLevel[index]++;
+                } else {
+                  dom[elementSelector].transformWrapLevel[index] = 0;
+                }
+
                 element.dataset.animationName = animationName;
-                dom[elementSelector].transformWrapLevel[index]++;
               }
 
               element.style.removeProperty(style);
@@ -99,6 +104,8 @@ AnimationBlock.prototype.start = function() {
             /* Hold animated CSS property values after animation is removed from element */
             currentKeyframeProps[animationName].forEach((style) => {
               element.style[style] = endStyles.getPropertyValue(style);
+
+              // if ( style === 'transform' ) delete element.dataset.animationName;
             });
 
             element.style.animation = remainingAnimations;
@@ -158,7 +165,7 @@ AnimationBlock.prototype.start = function() {
 
       while ( count < totalWrappers ) {
         currentWrapper = document.createElement('div');
-        currentWrapper.classList.add('transform-wrapper')
+        currentWrapper.classList.add('transform-wrapper');
         element.parentNode.insertBefore(currentWrapper, element);
         currentWrapper.appendChild(element);
         count++;
@@ -173,20 +180,22 @@ AnimationBlock.prototype.start = function() {
     let count = 0;
 
     while ( count < transformWrapLevel ) {
-      currentElement = currentElement.parentElement;
+      const parent = currentElement.parentElement;
+
+      if ( parent.classList.contains('transform-wrapper') ) {
+        currentElement = parent;
+      }
+
+      if ( !parent.dataset.animationName ) return parent;
+
       count++;
     }
 
-    if ( currentElement.classList.contains('transform-wrapper') ) {
-      console.log(transformWrapLevel);
-      return currentElement;
-    }
-
-    return element;
+    return currentElement;
   }
 
   function cacheDomElement(elementSelector) {
-    const elements =document.querySelectorAll(elementSelector)
+    const elements = document.querySelectorAll(elementSelector)
     dom[elementSelector] = {
       elements: elements,
       transformWrapLevel: Array(elements.length).fill(0)
