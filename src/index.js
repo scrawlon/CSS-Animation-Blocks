@@ -58,7 +58,7 @@ AnimationBlock.prototype.start = function() {
 
         dom[elementSelector].elements.forEach((element, index) => {
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
-          const currentAnimations = animationCSS;
+          const currentAnimations = animationCSS ? animationCSS : [];
           const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
           let rotateAnimation = false;
           let combinedAnimations = runningAnimations.concat(currentAnimations);
@@ -71,7 +71,7 @@ AnimationBlock.prototype.start = function() {
               if ( transformType === 'rotate' ) {
                 rotateAnimation = transformCSS[transformType];
                 combinedAnimations.push(rotateAnimation);
-                // console.log({currentAnimations});
+                console.log({combinedAnimations: combinedAnimations.join(',')});
               } else {
                 var currentElement = getTransformWrapElement(element, transformType);
 
