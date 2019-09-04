@@ -45,72 +45,89 @@ AnimationBlock.prototype.start = function() {
       const { animations } = timeline[animationTimes[nextAnimationIndex]];
 
       animations.forEach((animation) => {
-        const { elementSelector, animationCSS } = animation;
+        const { elementSelector, animationCSS, transformCSS } = animation;
 
         if ( !elementSelector ) return false;
-        if ( !animationCSS || !Array.isArray(animationCSS) ) return false;
+        if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
+
+        console.log(transformCSS);
 
         if ( !dom[elementSelector] ) {
-          cacheDomElement(elementSelector);
+          cacheDomElement(elementSelector, transformCount);
         }
 
         dom[elementSelector].elements.forEach((element, index) => {
-          const runningAnimations = element.style.animation;
-          const currentAnimations = animationCSS.join(',');
+          const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
+          const currentAnimations = animationCSS;
+          const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
+          let rotateAnimation = false;
+          let combinedAnimations = runningAnimations.concat(currentAnimations);
           let currentKeyframeProps = {};
 
-          if ( dom[elementSelector].transformWrapLevel[index] ) {
-            element = getTransformWrapElement(element, dom[elementSelector].transformWrapLevel[index]);
+          console.log(transformTypes);
+
+          if ( transformTypes ) {
+            transformTypes.forEach((transformType) => {
+              if ( transformType === 'rotate' ) {
+                rotateAnimation = transformCSS[transformType];
+                combinedAnimations.push(rotateAnimation);
+                // console.log({currentAnimations});
+              } else {
+                var currentElement = getTransformWrapElement(element, transformType);
+
+                currentElement.style.animation = transformCSS[transformType];
+                addAnimationEventListeners(currentElement);
+              }
+            });
+            // for ( var i=0; i<transformTypes.length; i++ ) {
+            //   var transformType = transformTypes[i];
+            //   var currentElement = getTransformWrapElement(element, transformType);
+            //
+            //   currentElement.style.animation = transformCSS[transformType];
+            //   addAnimationEventListeners(currentElement);
+            // }
           }
 
-          element.style.animation = runningAnimations && !dom[elementSelector].transformWrapLevel[index]
-            ? `${runningAnimations},${currentAnimations}`
-            : `${currentAnimations}`;
+          console.log({combinedAnimations});
 
-          element.addEventListener('animationstart', (event) => {
-            const { animationName } = event;
-            console.log({animationName});
+          element.style.animation = combinedAnimations.join(',');
 
-            /* Keep track of CSS properties of current animation's keyframes */
-            if ( !currentKeyframeProps[animationName] ) {
-              currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-            }
+          addAnimationEventListeners(element);
 
-            /* remove inline styles associated that might override current animation */
-            currentKeyframeProps[animationName].forEach((style) => {
-              if ( style === 'transform' ) {
-                if ( dom[elementSelector].transformWrapLevel[index] < transformCount ) {
-                  dom[elementSelector].transformWrapLevel[index]++;
-                } else {
-                  dom[elementSelector].transformWrapLevel[index] = 0;
-                }
+          function addAnimationEventListeners(element) {
+            element.addEventListener('animationstart', (event) => {
+              const { animationName } = event;
+              console.log({animationName});
 
-                element.dataset.animationName = animationName;
+              /* Keep track of CSS properties of current animation's keyframes */
+              if ( !currentKeyframeProps[animationName] ) {
+                currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
               }
 
-              element.style.removeProperty(style);
-            });
-          });
-
-          element.addEventListener('animationend', (event) => {
-            const { animationName } = event;
-            const endStyles = getComputedStyle(element);
-            const remainingAnimations = getRemainingAnimations(element, animationName);
-
-            if ( !currentKeyframeProps[animationName] ) {
-              currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-            }
-
-            /* Hold animated CSS property values after animation is removed from element */
-            currentKeyframeProps[animationName].forEach((style) => {
-              element.style[style] = endStyles.getPropertyValue(style);
-
-              // if ( style === 'transform' ) delete element.dataset.animationName;
+              /* remove inline styles associated that might override current animation */
+              currentKeyframeProps[animationName].forEach((style) => {
+                element.style.removeProperty(style);
+              });
             });
 
-            element.style.animation = remainingAnimations;
-            // element.classList.remove(animationClass);
-          });
+            element.addEventListener('animationend', (event) => {
+              const { animationName } = event;
+              const endStyles = getComputedStyle(element);
+              const remainingAnimations = getRemainingAnimations(element, animationName);
+
+              if ( !currentKeyframeProps[animationName] ) {
+                currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+              }
+
+              /* Hold animated CSS property values after animation is removed from element */
+              currentKeyframeProps[animationName].forEach((style) => {
+                element.style[style] = endStyles.getPropertyValue(style);
+              });
+
+              element.style.animation = remainingAnimations;
+              // element.classList.remove(animationClass);
+            });
+          }
         });
       });
 
@@ -175,26 +192,37 @@ AnimationBlock.prototype.start = function() {
     });
   }
 
-  function getTransformWrapElement(element, transformWrapLevel) {
+  function getTransformWrapElement(element, transformType) {
     let currentElement = element;
     let count = 0;
+    let firstAvailable = false;
 
-    while ( count < transformWrapLevel ) {
+    console.log({transformType});
+    // if ( transformType === 'rotate' ) return element;
+
+    while ( count < transformCount ) {
       const parent = currentElement.parentElement;
 
       if ( parent.classList.contains('transform-wrapper') ) {
         currentElement = parent;
       }
 
-      if ( !parent.dataset.animationName ) return parent;
+      if ( parent.dataset.transform === transformType ) return parent;
+
+      if ( !firstAvailable && !parent.dataset.transform ) firstAvailable = currentElement;
 
       count++;
+    }
+
+    if ( firstAvailable ) {
+      firstAvailable.dataset.transform = transformType;
+      return firstAvailable;
     }
 
     return currentElement;
   }
 
-  function cacheDomElement(elementSelector) {
+  function cacheDomElement(elementSelector, transformCount) {
     const elements = document.querySelectorAll(elementSelector)
     dom[elementSelector] = {
       elements: elements,
