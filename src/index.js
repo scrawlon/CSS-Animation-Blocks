@@ -49,12 +49,7 @@ AnimationBlock.prototype.start = function() {
 
         if ( !elementSelector ) return false;
         if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
-
-        console.log(transformCSS);
-
-        if ( !dom[elementSelector] ) {
-          cacheDomElement(elementSelector, transformCount);
-        }
+        if ( !dom[elementSelector] ) cacheDomElement(elementSelector, transformCount);
 
         dom[elementSelector].elements.forEach((element, index) => {
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
@@ -64,14 +59,11 @@ AnimationBlock.prototype.start = function() {
           let combinedAnimations = runningAnimations.concat(currentAnimations);
           let currentKeyframeProps = {};
 
-          console.log(transformTypes);
-
           if ( transformTypes ) {
             transformTypes.forEach((transformType) => {
               if ( transformType === 'rotate' ) {
                 rotateAnimation = transformCSS[transformType];
                 combinedAnimations.push(rotateAnimation);
-                console.log({combinedAnimations: combinedAnimations.join(',')});
               } else {
                 var currentElement = getTransformWrapElement(element, transformType);
 
@@ -79,16 +71,7 @@ AnimationBlock.prototype.start = function() {
                 addAnimationEventListeners(currentElement);
               }
             });
-            // for ( var i=0; i<transformTypes.length; i++ ) {
-            //   var transformType = transformTypes[i];
-            //   var currentElement = getTransformWrapElement(element, transformType);
-            //
-            //   currentElement.style.animation = transformCSS[transformType];
-            //   addAnimationEventListeners(currentElement);
-            // }
           }
-
-          console.log({combinedAnimations});
 
           element.style.animation = combinedAnimations.join(',');
 
@@ -97,7 +80,7 @@ AnimationBlock.prototype.start = function() {
           function addAnimationEventListeners(element) {
             element.addEventListener('animationstart', (event) => {
               const { animationName } = event;
-              console.log({animationName});
+              // console.log({animationName});
 
               /* Keep track of CSS properties of current animation's keyframes */
               if ( !currentKeyframeProps[animationName] ) {
@@ -106,7 +89,7 @@ AnimationBlock.prototype.start = function() {
 
               /* remove inline styles associated that might override current animation */
               currentKeyframeProps[animationName].forEach((style) => {
-                element.style.removeProperty(style);
+                if ( style !== 'transform' ) element.style.removeProperty(style);
               });
             });
 
@@ -198,7 +181,6 @@ AnimationBlock.prototype.start = function() {
     let firstAvailable = false;
 
     console.log({transformType});
-    // if ( transformType === 'rotate' ) return element;
 
     while ( count < transformCount ) {
       const parent = currentElement.parentElement;
@@ -208,7 +190,6 @@ AnimationBlock.prototype.start = function() {
       }
 
       if ( parent.dataset.transform === transformType ) return parent;
-
       if ( !firstAvailable && !parent.dataset.transform ) firstAvailable = currentElement;
 
       count++;
