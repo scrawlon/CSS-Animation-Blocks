@@ -46,13 +46,14 @@ AnimationBlock.prototype.start = function() {
 
       animations.forEach((animation) => {
         const { elementSelector, animationCSS, transformCSS, groupOffset } = animation;
-        const offset = groupOffset && groupOffset.milliseconds ? groupOffset.milliseconds : 0;
 
         if ( !elementSelector ) return false;
         if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
         if ( !dom[elementSelector] ) cacheDomElement(elementSelector, transformCount);
 
         dom[elementSelector].elements.forEach((element, index) => {
+          const offsetDelayTime = getGroupOffsetTimes(groupOffset);
+
           setTimeout(() => {
             const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
             const currentAnimations = animationCSS ? animationCSS : [];
@@ -114,7 +115,7 @@ AnimationBlock.prototype.start = function() {
               });
             }
 
-          }, offset * index);
+          }, offsetDelayTime * index);
 
         });
       });
@@ -218,6 +219,26 @@ AnimationBlock.prototype.start = function() {
     createTransformWrappers(elementSelector, transformCount);
   }
 
+  function getGroupOffsetTimes(groupOffset) {
+    if ( !groupOffset ) return 0;
+
+    const { delayTime, randomMinMaxDelayTimes } = groupOffset;
+
+    if ( delayTime && delayTime === Math.floor(delayTime) ) {
+      return delayTime;
+    } else if ( randomMinMaxDelayTimes && Array.isArray(randomMinMaxDelayTimes) && randomMinMaxDelayTimes.length >= 2 ) {
+      const [ min, max ] = randomMinMaxDelayTimes;
+      return getRandomInt(min, max);
+    }
+
+    return 0;
+  }
+
+  function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+  }
 }
 
 export { AnimationBlock };
