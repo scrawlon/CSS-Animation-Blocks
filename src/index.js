@@ -45,72 +45,77 @@ AnimationBlock.prototype.start = function() {
       const { animations } = timeline[animationTimes[nextAnimationIndex]];
 
       animations.forEach((animation) => {
-        const { elementSelector, animationCSS, transformCSS } = animation;
+        const { elementSelector, animationCSS, transformCSS, groupOffset } = animation;
+        const offset = groupOffset && groupOffset.milliseconds ? groupOffset.milliseconds : 0;
 
         if ( !elementSelector ) return false;
         if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
         if ( !dom[elementSelector] ) cacheDomElement(elementSelector, transformCount);
 
         dom[elementSelector].elements.forEach((element, index) => {
-          const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
-          const currentAnimations = animationCSS ? animationCSS : [];
-          const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
-          let rotateAnimation = false;
-          let combinedAnimations = runningAnimations.concat(currentAnimations);
-          let currentKeyframeProps = {};
+          setTimeout(() => {
+            const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
+            const currentAnimations = animationCSS ? animationCSS : [];
+            const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
+            let rotateAnimation = false;
+            let combinedAnimations = runningAnimations.concat(currentAnimations);
+            let currentKeyframeProps = {};
 
-          if ( transformTypes ) {
-            transformTypes.forEach((transformType) => {
-              if ( transformType === 'rotate' ) {
-                rotateAnimation = transformCSS[transformType];
-                combinedAnimations.push(rotateAnimation);
-              } else {
-                var currentElement = getTransformWrapElement(element, transformType);
+            if ( transformTypes ) {
+              transformTypes.forEach((transformType) => {
+                if ( transformType === 'rotate' ) {
+                  rotateAnimation = transformCSS[transformType];
+                  combinedAnimations.push(rotateAnimation);
+                } else {
+                  var currentElement = getTransformWrapElement(element, transformType);
 
-                currentElement.style.animation = transformCSS[transformType];
-                addAnimationEventListeners(currentElement);
-              }
-            });
-          }
-
-          element.style.animation = combinedAnimations.join(',');
-
-          addAnimationEventListeners(element);
-
-          function addAnimationEventListeners(element) {
-            element.addEventListener('animationstart', (event) => {
-              const { animationName } = event;
-              // console.log({animationName});
-
-              /* Keep track of CSS properties of current animation's keyframes */
-              if ( !currentKeyframeProps[animationName] ) {
-                currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-              }
-
-              /* remove inline styles associated that might override current animation */
-              currentKeyframeProps[animationName].forEach((style) => {
-                if ( style !== 'transform' ) element.style.removeProperty(style);
+                  currentElement.style.animation = transformCSS[transformType];
+                  addAnimationEventListeners(currentElement);
+                }
               });
-            });
+            }
 
-            element.addEventListener('animationend', (event) => {
-              const { animationName } = event;
-              const endStyles = getComputedStyle(element);
-              const remainingAnimations = getRemainingAnimations(element, animationName);
+            element.style.animation = combinedAnimations.join(',');
 
-              if ( !currentKeyframeProps[animationName] ) {
-                currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-              }
+            addAnimationEventListeners(element);
 
-              /* Hold animated CSS property values after animation is removed from element */
-              currentKeyframeProps[animationName].forEach((style) => {
-                element.style[style] = endStyles.getPropertyValue(style);
+            function addAnimationEventListeners(element) {
+              element.addEventListener('animationstart', (event) => {
+                const { animationName } = event;
+                // console.log({animationName});
+
+                /* Keep track of CSS properties of current animation's keyframes */
+                if ( !currentKeyframeProps[animationName] ) {
+                  currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+                }
+
+                /* remove inline styles associated that might override current animation */
+                currentKeyframeProps[animationName].forEach((style) => {
+                  if ( style !== 'transform' ) element.style.removeProperty(style);
+                });
               });
 
-              element.style.animation = remainingAnimations;
-              // element.classList.remove(animationClass);
-            });
-          }
+              element.addEventListener('animationend', (event) => {
+                const { animationName } = event;
+                const endStyles = getComputedStyle(element);
+                const remainingAnimations = getRemainingAnimations(element, animationName);
+
+                if ( !currentKeyframeProps[animationName] ) {
+                  currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+                }
+
+                /* Hold animated CSS property values after animation is removed from element */
+                currentKeyframeProps[animationName].forEach((style) => {
+                  element.style[style] = endStyles.getPropertyValue(style);
+                });
+
+                element.style.animation = remainingAnimations;
+                // element.classList.remove(animationClass);
+              });
+            }
+
+          }, offset * index);
+
         });
       });
 
@@ -180,7 +185,7 @@ AnimationBlock.prototype.start = function() {
     let count = 0;
     let firstAvailable = false;
 
-    console.log({transformType});
+    // console.log({transformType});
 
     while ( count < transformCount ) {
       const parent = currentElement.parentElement;
