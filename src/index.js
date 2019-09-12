@@ -3,14 +3,14 @@ function AnimationBlock(block, config) {
   this.init = function(globalOffsetTime) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
 
-    return this.block = this.processedBlock(globalOffsetTime);
+    return this.processedBlock(globalOffsetTime);
   }
   this.block = block;
   this.config = config;
   this.getProcessedBlockTimes = function(globalOffsetTime) {
     let blockTimes = {};
 
-    /* Convert human-readable minutes:seconds:milliseconds keys to milliseconds */
+    /* Convert human-readable minutes:seconds:milliseconds keys into milliseconds */
     for ( const timeString in this.block ) {
       const time = timeString.split(':');
 
@@ -18,23 +18,39 @@ function AnimationBlock(block, config) {
         const minutes = Math.floor(time[0] * 60000);
         const milliseconds = Math.floor(time[1].replace('.', ''));
         const blockTime = minutes + milliseconds + globalOffsetTime;
+        const importedBlocks = block[timeString].blocks;
 
         blockTimes[blockTime] = block[timeString];
 
-        const importedBlocks = blockTimes[blockTime].blocks;
+        console.log(block[timeString]);
 
         if ( importedBlocks ) {
-          // console.log(importedBlocks);
           importedBlocks.forEach((importedBlock) => {
             const importedBlockTimes = importedBlock.init(blockTime);
-            console.log({importedBlockTimes});
+
+            if ( importedBlockTimes ) {
+              for ( let [time, block] of Object.entries(importedBlockTimes) ) {
+                console.log(block.animations);
+
+                if ( !blockTimes[time] ) {
+                  blockTimes[time] = {};
+                }
+
+                if ( !blockTimes[time].animations ) {
+                  blockTimes[time].animations = [];
+                }
+
+                blockTimes[time].animations.push(...block.animations);
+              }
+            }
+            // console.log({importedBlockTimes});
           });
         }
-
-        // console.log(blockTimes[blockTime].blocks);
       } else {
         console.log(`Invalid time: ${timeString}`);
       }
+
+      console.log({blockTimes});
     }
 
     return blockTimes;
@@ -63,21 +79,17 @@ function AnimationBlock(block, config) {
   this.processedBlock = function(globalOffsetTime) {
     let processedBlockTimes = this.getProcessedBlockTimes(globalOffsetTime);
 
-    console.log({processedBlockTimes});
-
     return processedBlockTimes;
   };
 }
 
 AnimationBlock.prototype.start = function() {
-  this.init();
-  
   const { transformCount = 1, globalOffsetTime = 0, loop = false } = this.config;
   // const config = this.config;
   // const transformCount = config.transformCount ? config.transformCount : 1;
   // const globalOffset = config.globalOffset ? config.globalOffset : 0;
-  const block = this.block;
-  const animationTimes = Object.keys(this.block);
+  const block = this.init();
+  const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
   const styleSheets = document.styleSheets;
   let nextAnimationIndex = 0;
