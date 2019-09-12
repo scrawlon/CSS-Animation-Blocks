@@ -1,16 +1,16 @@
 
 function AnimationBlock(block, config) {
+  this.block = block;
+  this.config = config;
   this.init = function(globalOffsetTime) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
 
     return this.processedBlock(globalOffsetTime);
   }
-  this.block = block;
-  this.config = config;
-  this.getProcessedBlockTimes = function(globalOffsetTime) {
+  this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
 
-    /* Convert human-readable minutes:seconds:milliseconds keys into milliseconds */
+    /* Convert human-readable time "00:00.000" keys into milliseconds */
     for ( const timeString in this.block ) {
       const time = timeString.split(':');
 
@@ -19,19 +19,33 @@ function AnimationBlock(block, config) {
         const milliseconds = Math.floor(time[1].replace('.', ''));
         const blockTime = minutes + milliseconds + globalOffsetTime;
         const importedBlocks = block[timeString].blocks;
+        const { animations, blocks } = block[timeString];
 
-        blockTimes[blockTime] = block[timeString];
+        if ( !blockTimes[blockTime] ) {
+          blockTimes[blockTime] = block[timeString];
+        }
+
+        if ( animations ) {
+          blockTimes[blockTime].animations
+            ? blockTimes[blockTime].animations.push(...animations)
+            : blockTimes[blockTime].animations = animations;
+        }
+
+        if ( blocks ) {
+          blockTimes[blockTime].blocks
+            ? blockTimes[blockTime].blocks.push(...blocks)
+            : blockTimes[blockTime].blocks = blocks;
+        }
 
         console.log(block[timeString]);
 
+        /* Add included blocks' animations to current block */
         if ( importedBlocks ) {
           importedBlocks.forEach((importedBlock) => {
             const importedBlockTimes = importedBlock.init(blockTime);
 
             if ( importedBlockTimes ) {
               for ( let [time, block] of Object.entries(importedBlockTimes) ) {
-                console.log(block.animations);
-
                 if ( !blockTimes[time] ) {
                   blockTimes[time] = {};
                 }
@@ -43,51 +57,21 @@ function AnimationBlock(block, config) {
                 blockTimes[time].animations.push(...block.animations);
               }
             }
-            // console.log({importedBlockTimes});
           });
         }
       } else {
         console.log(`Invalid time: ${timeString}`);
       }
 
-      console.log({blockTimes});
+      // console.log({blockTimes});
     }
 
     return blockTimes;
-  };
-
-  // this.importBlocks = function(blockTimes) {
-  //   for ( let [blockTime, blockValue] of Object.entries(blockTimes) ) {
-  //     const { blocks } = blockValue;
-  //
-  //     // console.log('BLOCKS', blocks);
-  //
-  //     if ( blocks && Array.isArray(blocks) ) {
-  //       blocks.forEach((block) => {
-  //         // blockTimes = block.
-  //         const processedBlock = block.getProcessedBlockTimes(blockTime);
-  //         // block.config.globalOffsetTime = blockTime;
-  //
-  //         // const
-  //         console.log(blockTime);
-  //         console.log(processedBlock);
-  //       });
-  //     }
-  //   }
-  // }
-
-  this.processedBlock = function(globalOffsetTime) {
-    let processedBlockTimes = this.getProcessedBlockTimes(globalOffsetTime);
-
-    return processedBlockTimes;
   };
 }
 
 AnimationBlock.prototype.start = function() {
   const { transformCount = 1, globalOffsetTime = 0, loop = false } = this.config;
-  // const config = this.config;
-  // const transformCount = config.transformCount ? config.transformCount : 1;
-  // const globalOffset = config.globalOffset ? config.globalOffset : 0;
   const block = this.init();
   const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
@@ -96,8 +80,8 @@ AnimationBlock.prototype.start = function() {
   let startTime;
   let dom = {};
 
-  console.log(block);
-  console.log({config: this.config});
+  // console.log(block);
+  // console.log({config: this.config});
 
   requestAnimationFrame(animation);
 
@@ -191,8 +175,6 @@ AnimationBlock.prototype.start = function() {
     if ( nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
     } else if ( loop ) {
-      console.log('loopnow');
-
       /* loop code goes here */
       // startTime = timestamp;
       // nextAnimationIndex = 0;
