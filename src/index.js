@@ -22,7 +22,7 @@ function AnimationBlock(block, config) {
         const { animations, blocks } = block[timeString];
 
         if ( !blockTimes[blockTime] ) {
-          blockTimes[blockTime] = block[timeString];
+          blockTimes[blockTime] = {};
         }
 
         if ( animations ) {
@@ -80,7 +80,7 @@ AnimationBlock.prototype.start = function() {
   let startTime;
   let dom = {};
 
-  // console.log(block);
+  console.log(block);
   // console.log({config: this.config});
 
   requestAnimationFrame(animation);
