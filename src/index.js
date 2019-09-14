@@ -9,6 +9,7 @@ function AnimationBlock(block, config) {
   }
   this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
+    let elementTransformKeys = this.elementTransformKeys;
 
     /* Convert human-readable time "00:00.000" keys into milliseconds */
     for ( const timeString in this.block ) {
@@ -18,28 +19,20 @@ function AnimationBlock(block, config) {
         const minutes = Math.floor(time[0] * 60000);
         const milliseconds = Math.floor(time[1].replace('.', ''));
         const blockTime = minutes + milliseconds + globalOffsetTime;
-        const importedBlocks = block[timeString].blocks;
-        const { animations, blocks } = block[timeString];
+        const { animations, blocks: importedBlocks } = block[timeString];
 
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
         }
 
+        /* Add current block's animations */
         if ( animations ) {
           blockTimes[blockTime].animations
             ? blockTimes[blockTime].animations.push(...animations)
-            : blockTimes[blockTime].animations = animations;
+            :  blockTimes[blockTime].animations = animations;
         }
 
-        if ( blocks ) {
-          blockTimes[blockTime].blocks
-            ? blockTimes[blockTime].blocks.push(...blocks)
-            : blockTimes[blockTime].blocks = blocks;
-        }
-
-        console.log(block[timeString]);
-
-        /* Add included blocks' animations to current block */
+        /* Add included blocks' animations */
         if ( importedBlocks ) {
           importedBlocks.forEach((importedBlock) => {
             const importedBlockTimes = importedBlock.init(blockTime);
@@ -62,17 +55,42 @@ function AnimationBlock(block, config) {
       } else {
         console.log(`Invalid time: ${timeString}`);
       }
-
-      // console.log({blockTimes});
     }
 
     return blockTimes;
+  };
+  this.elementTransformKeys = function(block) {
+    const blockTimes = Object.keys(block);
+    let transformKeys = {};
+
+    blockTimes.forEach((blockTime) => {
+      const { animations } = block[blockTime];
+
+      if ( animations ) {
+        animations.forEach((animation) => {
+          const { elementSelector, transformCSS } = animation;
+
+          if ( !transformKeys[elementSelector] ) {
+            transformKeys[elementSelector] = new Set();
+          }
+
+          if ( transformCSS && typeof transformCSS === 'object' ) {
+            Object.keys(transformCSS).forEach((key) => {
+              if ( key !== 'rotate' ) transformKeys[elementSelector].add(key);
+            });
+          }
+        });
+      }
+    });
+
+    return transformKeys;
   };
 }
 
 AnimationBlock.prototype.start = function() {
   const { transformCount = 1, globalOffsetTime = 0, loop = false } = this.config;
   const block = this.init();
+  const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
   const styleSheets = document.styleSheets;
@@ -81,6 +99,7 @@ AnimationBlock.prototype.start = function() {
   let dom = {};
 
   console.log(block);
+  console.log(elementTransformKeys);
   // console.log({config: this.config});
 
   requestAnimationFrame(animation);
