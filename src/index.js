@@ -88,7 +88,7 @@ function AnimationBlock(block, config) {
 }
 
 AnimationBlock.prototype.start = function() {
-  const { transformCount = 1, globalOffsetTime = 0, loop = false } = this.config;
+  const { globalOffsetTime = 0, loop = false } = this.config;
   const block = this.init();
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
@@ -117,7 +117,7 @@ AnimationBlock.prototype.start = function() {
 
         if ( !elementSelector ) return false;
         if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
-        if ( !dom[elementSelector] ) cacheDomElement(elementSelector, transformCount);
+        if ( !dom[elementSelector] ) cacheDomElement(elementSelector, elementTransformKeys[elementSelector].size);
 
         dom[elementSelector].elements.forEach((element, index) => {
           const offsetDelayTime = getGroupOffsetTimes(groupOffset);
@@ -136,7 +136,7 @@ AnimationBlock.prototype.start = function() {
                   rotateAnimation = transformCSS[transformType];
                   combinedAnimations.push(rotateAnimation);
                 } else {
-                  var currentElement = getTransformWrapElement(element, transformType);
+                  var currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
 
                   currentElement.style.animation = transformCSS[transformType];
                   addAnimationEventListeners(currentElement);
@@ -179,7 +179,6 @@ AnimationBlock.prototype.start = function() {
                 });
 
                 element.style.animation = remainingAnimations;
-                // element.classList.remove(animationClass);
               });
             }
 
@@ -247,12 +246,10 @@ AnimationBlock.prototype.start = function() {
     });
   }
 
-  function getTransformWrapElement(element, transformType) {
+  function getTransformWrapElement(element, transformType, transformCount) {
     let currentElement = element;
     let count = 0;
     let firstAvailable = false;
-
-    // console.log({transformType});
 
     while ( count < transformCount ) {
       const parent = currentElement.parentElement;
