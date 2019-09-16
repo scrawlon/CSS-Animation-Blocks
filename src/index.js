@@ -274,6 +274,7 @@ AnimationBlock.prototype.start = function() {
 
   function cacheDomElement(elementSelector, transformCount) {
     const elements = document.querySelectorAll(elementSelector)
+
     dom[elementSelector] = {
       elements: elements,
       transformWrapLevel: Array(elements.length).fill(0)
