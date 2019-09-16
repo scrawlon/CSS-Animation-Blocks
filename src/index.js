@@ -178,7 +178,7 @@ AnimationBlock.prototype.start = function() {
                   element.style[style] = endStyles.getPropertyValue(style);
                 });
 
-                element.style.animation = remainingAnimations;
+                if ( remainingAnimations ) element.style.animation = remainingAnimations;
               });
             }
 
