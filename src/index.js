@@ -231,12 +231,27 @@ AnimationBlock.prototype.start = function() {
     const elements = document.querySelectorAll(elementSelector);
     let count = 0;
 
-    elements.forEach((element) => {
+    elements.forEach((element, index) => {
       let currentWrapper;
 
       while ( count < totalWrappers ) {
         currentWrapper = document.createElement('div');
         currentWrapper.classList.add('transform-wrapper');
+
+        if ( index = elements.length - 1 ) {
+          let elementStyle = window.getComputedStyle(element);
+
+          currentWrapper.style.width = element.clientWidth + 'px';
+          currentWrapper.style.height = element.clientHeight + 'px';
+
+          if ( elementStyle.position ) {
+            currentWrapper.style.position = elementStyle.position;
+            currentWrapper.style.top = elementStyle.top;
+            currentWrapper.style.bottom = elementStyle.bottom;
+            currentWrapper.style.left = elementStyle.left;
+            currentWrapper.style.right = elementStyle.right;
+          }
+        }
         element.parentNode.insertBefore(currentWrapper, element);
         currentWrapper.appendChild(element);
         count++;

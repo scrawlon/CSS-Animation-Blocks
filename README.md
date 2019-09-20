@@ -1,21 +1,52 @@
 # CSS Animation Blocks
-_This JavaScript library fulfills two main goals_
+_A JavaScript library for managing and applying CSS animations with the following features:_
 
-1. **CSS Animation:** _Web designers and frontend developers can collaborate on simple motion sequences with CSS animation keyframes._
+1. **"Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format. Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
 
-2. **Animation blocks (timeline):** _CSS animation keyframes can be combined into blocks (ex. intro, title-sequence, credits). These blocks can then be added to a final timeline._
+2. **Transforms:** Applies CSS transforms to wrapper elements, so multiple transforms can be used at the same time. Wrapper elements are created automatically at run time. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
 coming soon
 
-## CSS animation
-Creating an animation block requires CSS animations. The following 'fade-in' class defines a 1 second animation (opacity 0 to 1).
+## How it Works
 
-_For these examples, I'm only including the @keyframes syntax. You may need to add the @-webkit-keyframes and other vendor prefixes._
+### Start with HTML
+Here's an html page containing one _"div"_ with class _"box"_.
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSS Animation Blocks</title>
+  <link href="style.css" rel="stylesheet">
+  <script src="index.js" type="module"></script>
+</head>
+<body>
+
+  <div class="box"></div>
+
+</body>
+</html>
+```
+
+There are also _"style.css"_ and _"index.js"_ files included. That's where we'll place our CSS Animations and Animation Blocks code for the _"box"_ element.
+
+### CSS
+In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
+
+The following styles create a square red box with _"opacity"_ set to 0 (invisible), and keyframes _"fade-in"_ that will animate _"opacity"_ from 0-1.
+
+> _NOTE: These examples only include the @keyframes syntax. You may require @-webkit-keyframes and other vendor prefixes for cross-browser compatibility._
 
 ```CSS
-.fade-in {
-  animation-name: fade-in 1s;
+.box {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  background: red;
+  opacity: 0;
 }
 
 @keyframes fade-in {
@@ -24,52 +55,28 @@ _For these examples, I'm only including the @keyframes syntax. You may need to a
 }
 ```
 
-If you create an html file and add the 'fade-in' class to a div, the animation will occur as soon as the page loads. You can adjust the start time by adding 'animation-delay', but as you add more elements it can be difficult to maintain. This is where animation blocks can help.
+Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_ keyframes to the _"box"_ element.
 
-## Animation Blocks
-Now that we have a CSS animation, we need an html element to apply it to. Here's a div with a 'box' class. Its opacity is set to 0, so it will not be visible on page load.
-
-```html
-<style>
-  .box {
-    opacity: 0;
-    background: red;
-    width: 100px;
-    height: 100px;
-  }
-
-  .fade-in {
-    animation-name: fade-in 1s;
-  }
-
-  @keyframes fade-in {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }    
-  }    
-</style>
-
-<div class="box"></div>
-
-<script>/* CSS Animation Blocks JavaScript code goes here */</script>
-```
-
-CSS Animation Blocks hold timeline events in objects with keys representing event times in 'Minutes:Seconds:Milliseconds' format. You just require the library and add the timeline.
-
-Here's a CSS Animation Block code to run the 'fade-in' animation on the '.box' div:
+### Create an Animation Block
+In the _"index.js"_ file, import the AnimationBlock code and create a new AnimationBlock:
 
 ```JavaScript
-var animationBlocks = require('css-animation-blocks');
-var box = document.querySelector('.box');
-var timeline = {
-  '00:01:000': {
+import { AnimationBlock } from 'css-animation-blocks');
+
+const myBlock = new AnimationBlock({
+  '00:00.000': {
     animations: [
       {
-        elements: box,
-        animationSelector: '.fade-in'
+        elementSelector: '.box',
+        animationCSS: [
+          'fade-in 1s ease normal forwards',
+        ]
       }
-    ]}
-}
+    ]
+  }
+},{});
 
-animationBlocks.load(timeline);
-animationBlocks.start();
+myBlock.start();
 ```
+
+At time _"00:00.000"_ we have an _animations_ array containing one animation object. It's target elementSelector _".box"_ and apply the _"fade-in"_ keyframes for a duration 1 second.
