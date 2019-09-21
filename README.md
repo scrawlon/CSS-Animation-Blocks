@@ -79,6 +79,8 @@ const myBlock = new AnimationBlock({
 myBlock.start();
 ```
 
-At time _"00:00.000"_ we have an _animations_ array containing one animation object. It targets elementSelector _".box"_ and adds the _"fade-in"_ keyframes for a duration of 1 second.
+At time _"00:00.000"_ we have an _animations_ array containing one animation object. It targets the elementSelector _".box"_ and adds the _"fade-in"_ keyframes. The animation will run for one second.
 
-Load the page in a browser, the box should fade-in now.
+> _NOTE: Animations are written in standard CSS animation shorthand. For more info, [visit the MDN developer documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+
+Load the page in a browser and you should see the box should fade in.
