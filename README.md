@@ -8,9 +8,9 @@ _A JavaScript library for managing and applying CSS animations with the followin
 ## Installation
 coming soon
 
-## How it Works
+## Basic Tutorial
 
-### Start with HTML
+### HTML
 Here's an html page containing one _"div"_ with class _"box"_.
 
 
@@ -57,7 +57,7 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
 
 Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_ keyframes to the _"box"_ element.
 
-### Create an Animation Block
+### JavaScript
 In the _"index.js"_ file, import the AnimationBlock code and create a new AnimationBlock:
 
 ```JavaScript
@@ -79,4 +79,6 @@ const myBlock = new AnimationBlock({
 myBlock.start();
 ```
 
-At time _"00:00.000"_ we have an _animations_ array containing one animation object. It's target elementSelector _".box"_ and apply the _"fade-in"_ keyframes for a duration 1 second.
+At time _"00:00.000"_ we have an _animations_ array containing one animation object. It targets elementSelector _".box"_ and adds the _"fade-in"_ keyframes for a duration of 1 second.
+
+Load the page in a browser, the box should fade-in now.
