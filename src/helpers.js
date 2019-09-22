@@ -1,4 +1,35 @@
 
+const styleSheets = document.styleSheets;
+let cssKeyframeProps = {};
+
+function addAnimationEventListeners(element) {
+  element.addEventListener('animationstart', (event) => {
+    const { animationName } = event;
+
+    if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+
+    /* remove inline styles associated that might override current animation */
+    cssKeyframeProps[animationName].forEach((style) => {
+      if ( style !== 'transform' ) element.style.removeProperty(style);
+    });
+  });
+
+  element.addEventListener('animationend', (event) => {
+    const { animationName } = event;
+    const endStyles = getComputedStyle(element);
+    const remainingAnimations = getRemainingAnimations(element, animationName);
+
+    if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+
+    /* Hold animated CSS property values after animation is removed from element */
+    cssKeyframeProps[animationName].forEach((style) => {
+      element.style[style] = endStyles.getPropertyValue(style);
+    });
+
+    if ( remainingAnimations ) element.style.animation = remainingAnimations;
+  });
+}
+
 function createTransformWrappers(elementSelector, totalWrappers) {
   const elements = document.querySelectorAll(elementSelector);
   let count = 0;
@@ -10,7 +41,7 @@ function createTransformWrappers(elementSelector, totalWrappers) {
       currentWrapper = document.createElement('div');
       currentWrapper.classList.add('transform-wrapper');
 
-      if ( index = elements.length - 1 ) {
+      if ( index === elements.length - 1 ) {
         let elementStyle = window.getComputedStyle(element);
 
         currentWrapper.style.width = element.clientWidth + 'px';
@@ -93,4 +124,4 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-export { createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations }
+export { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations }

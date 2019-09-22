@@ -1,5 +1,5 @@
 
-import { createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations } from './helpers.js';
+import { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations } from './helpers.js';
 
 function AnimationBlock(block, config) {
   this.block = block;
@@ -117,7 +117,6 @@ AnimationBlock.prototype.start = function() {
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
-  const styleSheets = document.styleSheets;
   let nextAnimationIndex = 0;
   let startTime;
   let dom = {};
@@ -152,7 +151,7 @@ AnimationBlock.prototype.start = function() {
             const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
             let rotateAnimation = false;
             let combinedAnimations = runningAnimations.concat(currentAnimations);
-            let currentKeyframeProps = {};
+            // let currentKeyframeProps = {};
 
             if ( transformTypes ) {
               transformTypes.forEach((transformType) => {
@@ -160,7 +159,7 @@ AnimationBlock.prototype.start = function() {
                   rotateAnimation = transformCSS[transformType];
                   combinedAnimations.push(rotateAnimation);
                 } else {
-                  var currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
+                  const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
 
                   currentElement.style.animation = transformCSS[transformType];
                   addAnimationEventListeners(currentElement);
@@ -171,41 +170,6 @@ AnimationBlock.prototype.start = function() {
             element.style.animation = combinedAnimations.join(',');
 
             addAnimationEventListeners(element);
-
-            function addAnimationEventListeners(element) {
-              element.addEventListener('animationstart', (event) => {
-                const { animationName } = event;
-                // console.log({animationName});
-
-                /* Keep track of CSS properties of current animation's keyframes */
-                if ( !currentKeyframeProps[animationName] ) {
-                  currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-                }
-
-                /* remove inline styles associated that might override current animation */
-                currentKeyframeProps[animationName].forEach((style) => {
-                  if ( style !== 'transform' ) element.style.removeProperty(style);
-                });
-              });
-
-              element.addEventListener('animationend', (event) => {
-                const { animationName } = event;
-                const endStyles = getComputedStyle(element);
-                const remainingAnimations = getRemainingAnimations(element, animationName);
-
-                if ( !currentKeyframeProps[animationName] ) {
-                  currentKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-                }
-
-                /* Hold animated CSS property values after animation is removed from element */
-                currentKeyframeProps[animationName].forEach((style) => {
-                  element.style[style] = endStyles.getPropertyValue(style);
-                });
-
-                if ( remainingAnimations ) element.style.animation = remainingAnimations;
-              });
-            }
-
           }, offsetDelayTime * index);
 
         });

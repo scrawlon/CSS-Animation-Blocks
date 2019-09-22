@@ -50,8 +50,7 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
 }
 
 @keyframes fade-in {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }    
+  to { opacity: 1; }    
 }
 ```
 
