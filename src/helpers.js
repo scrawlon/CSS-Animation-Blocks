@@ -3,13 +3,22 @@ const styleSheets = document.styleSheets;
 let cssKeyframeProps = {};
 
 function addAnimationEventListeners(element) {
+  const { tagName, className } = element;
+  const elementKey = `${tagName}.${className}`;
+
+  if ( !cssKeyframeProps[elementKey] ) cssKeyframeProps[elementKey] = {};
+
+  console.log({elementKey});
+
   element.addEventListener('animationstart', (event) => {
     const { animationName } = event;
 
-    if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+    console.log({animationName});
+
+    if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
 
     /* remove inline styles associated that might override current animation */
-    cssKeyframeProps[animationName].forEach((style) => {
+    cssKeyframeProps[elementKey][animationName].forEach((style) => {
       if ( style !== 'transform' ) element.style.removeProperty(style);
     });
   });
@@ -19,14 +28,16 @@ function addAnimationEventListeners(element) {
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
 
-    if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+    console.log({animationName});
+
+    if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
 
     /* Hold animated CSS property values after animation is removed from element */
-    cssKeyframeProps[animationName].forEach((style) => {
+    cssKeyframeProps[elementKey][animationName].forEach((style) => {
       element.style[style] = endStyles.getPropertyValue(style);
     });
 
-    if ( remainingAnimations ) element.style.animation = remainingAnimations;
+    element.style.animation = remainingAnimations;
   });
 }
 

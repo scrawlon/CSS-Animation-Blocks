@@ -169,7 +169,7 @@ AnimationBlock.prototype.start = function() {
 
             element.style.animation = combinedAnimations.join(',');
 
-            addAnimationEventListeners(element);
+            if ( animationCSS ) addAnimationEventListeners(element);
           }, offsetDelayTime * index);
 
         });
