@@ -8,12 +8,8 @@ function addAnimationEventListeners(element) {
 
   if ( !cssKeyframeProps[elementKey] ) cssKeyframeProps[elementKey] = {};
 
-  console.log({elementKey});
-
   element.addEventListener('animationstart', (event) => {
     const { animationName } = event;
-
-    console.log({animationName});
 
     if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
 
@@ -27,8 +23,6 @@ function addAnimationEventListeners(element) {
     const { animationName } = event;
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
-
-    console.log({animationName});
 
     if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
 
