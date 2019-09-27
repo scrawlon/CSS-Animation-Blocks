@@ -3,7 +3,7 @@ _A JavaScript library for managing and applying CSS animations with the followin
 
 1. **"Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format. Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
 
-2. **Transforms:** Applies CSS transforms to wrapper elements, so multiple transforms can be used at the same time. Wrapper elements are created automatically at run time. Without wrapper elements, transforms would cancel each other out.
+2. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
 coming soon
@@ -105,11 +105,11 @@ const myBlock = new AnimationBlock({
     animations: [
       {
         elementSelector: '.box',
-        animationCSS: [
+        cssAnimation: [
           'fade-in 1s ease normal forwards',
           'background-colors 1.5s steps(1) normal forwards',
         ],
-        transformCSS: {
+        cssTransform: {
           translateY: 'move-down 2s ease normal forwards',
         },
       },
@@ -120,8 +120,13 @@ const myBlock = new AnimationBlock({
 myBlock.start();
 ```
 
-At time _"00:00.000"_ we have an _animations_ array containing one animation object. It targets the elementSelector _".box"_ and adds the _"fade-in"_ keyframes. The animation will run for one second.
+At time _"00:00.000"_ we have an _animations_ array containing an array of animation objects. Each animation object:
+* Must have one _"elementSelector"_. The animation above targets _".box"_ (elements with the class "box").
+* Can (optionally) have one _"cssAnimation"_ array containing CSS animation shorthand strings.
+* Can (optionally) have one _"cssTransform"_ object. Object keys should match the transform type, and the values are CSS animation shorthand strings.
 
-> _NOTE: Animations are written in standard CSS animation shorthand. For more info, [visit the MDN developer documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+The animation block above applies three animations, _"fade-in"_, _"background-colors"_ and _"move-down"_. Load the page in a browser and you should see the box fade in, move down and turn red.
 
-Load the page in a browser and you should see the box should fade in.
+> _NOTE: Animations are written in standard CSS animation shorthand. For more info, [visit the MDN web docs](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)_
+
+### Nested Blocks
