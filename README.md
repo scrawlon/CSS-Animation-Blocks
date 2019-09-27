@@ -11,7 +11,7 @@ coming soon
 ## Basic Tutorial
 
 ### HTML
-Here's an html page containing one _"div"_ with class _"box"_.
+Here's an html page with a _".container div"_, _".box div"_ and an _"h1"_ .
 
 
 ```html
@@ -25,13 +25,17 @@ Here's an html page containing one _"div"_ with class _"box"_.
 </head>
 <body>
 
-  <div class="box"></div>
+  <div class="container">
+    <div class="box">
+      <h1>CSS Animation Blocks</h1>
+    </div>
+  </div>
 
 </body>
 </html>
 ```
 
-There are also _"style.css"_ and _"index.js"_ files included. That's where we'll place our CSS Animations and Animation Blocks code for the _"box"_ element.
+There are also _"style.css"_ and _"index.js"_ files. That's where we'll place our code for to animate the _"box"_ element.
 
 ### CSS
 In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
@@ -41,20 +45,54 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
 > _NOTE: These examples only include the @keyframes syntax. You may require @-webkit-keyframes and other vendor prefixes for cross-browser compatibility._
 
 ```CSS
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  font-size: 1.4rem;
+  text-transform: lowercase;
+  font-family: sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
 .box {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto;
-  background: red;
+  width: 240px;
+  height: 180px;
+  background: black;
   opacity: 0;
+  position: relative;
+  border-radius: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+h1 {
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  position: absolute;
+  top: 4%;
+  padding: 0;
+  margin: 0;
 }
 
 @keyframes fade-in {
   to { opacity: 1; }    
 }
+
+@keyframes move-down {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(20%); }
+}
+
+@keyframes background-red {
+  to { background: red; }
+}
 ```
 
-Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_ keyframes to the _"box"_ element.
+Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_, _"move-down"_ and _"background-red"_ keyframes to the _"box"_ element.
 
 ### JavaScript
 In the _"index.js"_ file, import the AnimationBlock code and create a new AnimationBlock:
@@ -69,8 +107,12 @@ const myBlock = new AnimationBlock({
         elementSelector: '.box',
         animationCSS: [
           'fade-in 1s ease normal forwards',
-        ]
-      }
+          'background-colors 1.5s steps(1) normal forwards',
+        ],
+        transformCSS: {
+          translateY: 'move-down 2s ease normal forwards',
+        },
+      },
     ]
   }
 },{});

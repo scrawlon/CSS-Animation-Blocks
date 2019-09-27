@@ -66,14 +66,14 @@ function AnimationBlock(block, config) {
 
       if ( animations ) {
         animations.forEach((animation) => {
-          const { elementSelector, transformCSS } = animation;
+          const { elementSelector, cssTransform } = animation;
 
           if ( !transformKeys[elementSelector] ) {
             transformKeys[elementSelector] = new Set();
           }
 
-          if ( transformCSS && typeof transformCSS === 'object' ) {
-            Object.keys(transformCSS).forEach((key) => {
+          if ( cssTransform && typeof cssTransform === 'object' ) {
+            Object.keys(cssTransform).forEach((key) => {
               if ( key !== 'rotate' ) transformKeys[elementSelector].add(key);
             });
           }
@@ -136,10 +136,10 @@ AnimationBlock.prototype.start = function() {
       if ( !animations ) return false;
 
       animations.forEach((animation) => {
-        const { elementSelector, animationCSS, transformCSS, groupOffset } = animation;
+        const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
 
         if ( !elementSelector ) return false;
-        if ( (!animationCSS || !Array.isArray(animationCSS)) && (!transformCSS || typeof transformCSS !== 'object') ) return false;
+        if ( (!cssAnimation || !Array.isArray(cssAnimation)) && (!cssTransform || typeof cssTransform !== 'object') ) return false;
         if ( !dom[elementSelector] ) cacheDomElement(elementSelector, elementTransformKeys[elementSelector].size);
 
         dom[elementSelector].elements.forEach((element, index) => {
@@ -147,8 +147,8 @@ AnimationBlock.prototype.start = function() {
 
           setTimeout(() => {
             const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
-            const currentAnimations = animationCSS ? animationCSS : [];
-            const transformTypes = transformCSS ? Object.keys(transformCSS) : false;
+            const currentAnimations = cssAnimation ? cssAnimation : [];
+            const transformTypes = cssTransform ? Object.keys(cssTransform) : false;
             let rotateAnimation = false;
             let combinedAnimations = runningAnimations.concat(currentAnimations);
             // let currentKeyframeProps = {};
@@ -156,12 +156,12 @@ AnimationBlock.prototype.start = function() {
             if ( transformTypes ) {
               transformTypes.forEach((transformType) => {
                 if ( transformType === 'rotate' ) {
-                  rotateAnimation = transformCSS[transformType];
+                  rotateAnimation = cssTransform[transformType];
                   combinedAnimations.push(rotateAnimation);
                 } else {
                   const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
 
-                  currentElement.style.animation = transformCSS[transformType];
+                  currentElement.style.animation = cssTransform[transformType];
                   addAnimationEventListeners(currentElement);
                 }
               });
@@ -169,7 +169,7 @@ AnimationBlock.prototype.start = function() {
 
             element.style.animation = combinedAnimations.join(',');
 
-            if ( animationCSS ) addAnimationEventListeners(element);
+            if ( cssAnimation ) addAnimationEventListeners(element);
           }, offsetDelayTime * index);
 
         });
