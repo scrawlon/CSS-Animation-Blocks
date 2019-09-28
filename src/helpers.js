@@ -76,10 +76,11 @@ function getBlockTime(timeString, globalOffsetTime) {
   if ( time.length && time.length === 2 ) {
     const minutes = Math.floor(time[0] * 60000);
     const milliseconds = Math.floor(time[1].replace('.', ''));
+
     return minutes + milliseconds + globalOffsetTime;
   }
 
-  return false;
+  return -1;
 }
 
 function getGroupOffsetTimes(groupOffset) {

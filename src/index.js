@@ -16,7 +16,7 @@ function AnimationBlock(block, config) {
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
 
-      if ( blockTime ) {
+      if ( blockTime >= 0 ) {
         const { animations, blocks: importedBlocks } = block[timeString];
 
         if ( !blockTimes[blockTime] ) {

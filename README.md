@@ -40,7 +40,7 @@ There are also _"style.css"_ and _"index.js"_ files. That's where we'll place ou
 ### CSS
 In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
 
-The following styles create a square red box with _"opacity"_ set to 0 (invisible), and keyframes _"fade-in"_ that will animate _"opacity"_ from 0-1.
+The following styles create a square red box with _"opacity"_ set to 0 (invisible), and keyframes _"fade-in"_, _"move-down"_,  _"background-red"_ and _"rotate"_.
 
 > _NOTE: These examples only include the @keyframes syntax. You may require @-webkit-keyframes and other vendor prefixes for cross-browser compatibility._
 
@@ -90,6 +90,10 @@ h1 {
 @keyframes background-red {
   to { background: red; }
 }
+
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
 ```
 
 Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_, _"move-down"_ and _"background-red"_ keyframes to the _"box"_ element.
@@ -100,7 +104,7 @@ In the _"index.js"_ file, import the AnimationBlock code and create a new Animat
 ```JavaScript
 import { AnimationBlock } from 'css-animation-blocks');
 
-const myBlock = new AnimationBlock({
+const mainBlock = new AnimationBlock({
   '00:00.000': {
     animations: [
       {
@@ -117,7 +121,7 @@ const myBlock = new AnimationBlock({
   }
 },{});
 
-myBlock.start();
+mainBlock.start();
 ```
 
 At time _"00:00.000"_ we have an _animations_ array containing an array of animation objects. Each animation object:
@@ -130,3 +134,117 @@ The animation block above applies three animations, _"fade-in"_, _"background-co
 > _NOTE: Animations are written in standard CSS animation shorthand. For more info, [visit the MDN web docs](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)_
 
 ### Nested Blocks
+
+One benefit of CSS Animation Blocks is that you can include blocks in other blocks. To illustrate let's extend the previous example by moving the _".box"_ animation into its own block, and include that block in the _"mainBlock"_.
+
+```JavaScript
+import { AnimationBlock } from 'css-animation-blocks');
+
+const boxBlock = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        elementSelector: '.box',
+        cssAnimation: [
+          'fade-in 1s ease normal forwards',
+          'background-red 1.5s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          translateY: 'move-down 2s ease normal forwards',
+        },
+      },
+    ]
+  }
+},{});
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [boxBlock]
+  }
+},{});
+
+mainBlock.start();
+```
+
+We created a new Animation Block named _"boxBlock"_. To nest that block in our _"mainBlock"_, we added a _"blocks"_ array containing the new block.
+
+Even nested blocks can contain nested blocks. As a final example, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
+
+```JavaScript
+import { AnimationBlock } from 'css-animation-blocks');
+
+const titleBlock = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        elementSelector: 'h1',
+        cssAnimation: [
+          'fade-in 1s ease normal forwards',
+        ],
+        cssTransform: {
+          scale: 'scale-down 1s ease normal forwards',
+        },
+      }
+    ]
+  },
+  '00:05.500': {
+    animations: [
+      {
+        elementSelector: 'h1',
+        cssTransform: {
+          scale: 'scale-down 3s linear reverse forwards',
+        },
+      }
+    ]
+  },
+},{});
+
+const boxBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [titleBlock],
+    animations: [
+      {
+        elementSelector: '.box',
+        cssAnimation: [
+          'fade-in 1s ease normal forwards',
+          'background-red 1.5s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          translateY: 'move-down 2s ease normal forwards',
+        },
+      },
+    ]
+  },
+  '00:05.500': {
+    animations: [
+      {
+        elementSelector: '.box',
+        cssAnimation: [
+          'background-red 1.5s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards 1',
+        },
+      }
+    ]
+  },
+  '00:06.500': {
+    animations: [
+      {
+        elementSelector: '.box',
+        cssAnimation: [
+          'fade-in 1s ease reverse forwards',
+        ],
+      }
+    ]
+  },
+},{});
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [boxBlock]
+  }
+},{});
+
+mainBlock.start();
+```
