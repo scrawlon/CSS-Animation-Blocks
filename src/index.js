@@ -182,11 +182,25 @@ AnimationBlock.prototype.start = function() {
       requestAnimationFrame(animation);
     } else if ( loop ) {
       /* loop code goes here */
-      // startTime = timestamp;
-      // nextAnimationIndex = 0;
+      startTime = timestamp;
+      nextAnimationIndex = 0;
+      resetDomElements(dom);
+      // console.log({dom});
       // dom = {};
-      // requestAnimationFrame(animation);
+      requestAnimationFrame(animation);
     }
+  }
+
+  function resetDomElements(domElements) {
+    const domElementKeys = domElements ? Object.keys(domElements) : false;
+
+    if ( !domElementKeys ) return false;
+
+    domElementKeys.forEach((domElementKey) => {
+      const { elements } = domElements[domElementKey];
+
+      elements.forEach(element => element.style = '');
+    });
   }
 
   function cacheDomElement(elementSelector, transformCount) {
