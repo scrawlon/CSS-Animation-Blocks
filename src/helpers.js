@@ -45,7 +45,6 @@ function createTransformWrappers(elementSelector, totalWrappers) {
 
     if ( !elementStyle ) {
       elementStyle = window.getComputedStyle(element);
-      console.log({elementStyle});
     }
 
     while ( count < totalWrappers ) {
