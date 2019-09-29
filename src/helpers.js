@@ -37,20 +37,26 @@ function addAnimationEventListeners(element) {
 
 function createTransformWrappers(elementSelector, totalWrappers) {
   const elements = document.querySelectorAll(elementSelector);
+  let elementStyle = '';
   let count = 0;
 
   elements.forEach((element, index) => {
     let currentWrapper;
+
+    if ( !elementStyle ) {
+      elementStyle = window.getComputedStyle(element);
+      console.log({elementStyle});
+    }
 
     while ( count < totalWrappers ) {
       currentWrapper = document.createElement('div');
       currentWrapper.classList.add('transform-wrapper');
 
       if ( count === totalWrappers - 1 ) {
-        let elementStyle = window.getComputedStyle(element);
-
         currentWrapper.style.width = element.clientWidth + 'px';
         currentWrapper.style.height = element.clientHeight + 'px';
+        currentWrapper.style.margin = elementStyle.margin;
+        currentWrapper.style.padding = elementStyle.padding;
 
         if ( elementStyle.position ) {
           currentWrapper.style.position = elementStyle.position;
