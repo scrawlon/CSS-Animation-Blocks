@@ -46,7 +46,7 @@ function createTransformWrappers(elementSelector, totalWrappers) {
       currentWrapper = document.createElement('div');
       currentWrapper.classList.add('transform-wrapper');
 
-      if ( index === elements.length - 1 ) {
+      if ( count === totalWrappers - 1 ) {
         let elementStyle = window.getComputedStyle(element);
 
         currentWrapper.style.width = element.clientWidth + 'px';
@@ -130,4 +130,16 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-export { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations }
+function resetDomElements(domElements) {
+  const domElementKeys = domElements ? Object.keys(domElements) : false;
+
+  if ( !domElementKeys ) return false;
+
+  domElementKeys.forEach((domElementKey) => {
+    const { elements } = domElements[domElementKey];
+
+    elements.forEach(element => element.style = '');
+  });
+}
+
+export { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations, resetDomElements }

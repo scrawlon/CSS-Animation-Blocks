@@ -53,7 +53,7 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
   text-transform: lowercase;
   font-family: sans-serif;
   padding: 0;
-  margin: 0;
+  margin: 0 1em;
 }
 
 .box {
@@ -168,7 +168,7 @@ mainBlock.start();
 
 We created a new Animation Block named _"boxBlock"_. To nest that block in our _"mainBlock"_, we added a _"blocks"_ array containing the new block.
 
-Even nested blocks can contain nested blocks. As a final example, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
+Even nested blocks can contain nested blocks. Here, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
 
 ```JavaScript
 import { AnimationBlock } from 'css-animation-blocks');
@@ -247,4 +247,17 @@ const mainBlock = new AnimationBlock({
 },{});
 
 mainBlock.start();
+```
+
+## Configuration
+
+Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_ and _"loop"_.
+
+### Group Offset
+
+So far, we've looked at animations on single elements, one _".box"_ and one _"h1"_, but those selectors could apply to multiple elements. Let's duplicate the existing _".box"_ element and see how the animation is applied.
+
+```HTML
+
+
 ```

@@ -1,5 +1,5 @@
 
-import { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations } from './helpers.js';
+import { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations, resetDomElements } from './helpers.js';
 
 function AnimationBlock(block, config) {
   this.block = block;
@@ -121,10 +121,6 @@ AnimationBlock.prototype.start = function() {
   let startTime;
   let dom = {};
 
-  console.log(block);
-  console.log(elementTransformKeys);
-  // console.log({config: this.config});
-
   requestAnimationFrame(animation);
 
   function animation(timestamp) {
@@ -189,18 +185,6 @@ AnimationBlock.prototype.start = function() {
       // dom = {};
       requestAnimationFrame(animation);
     }
-  }
-
-  function resetDomElements(domElements) {
-    const domElementKeys = domElements ? Object.keys(domElements) : false;
-
-    if ( !domElementKeys ) return false;
-
-    domElementKeys.forEach((domElementKey) => {
-      const { elements } = domElements[domElementKey];
-
-      elements.forEach(element => element.style = '');
-    });
   }
 
   function cacheDomElement(elementSelector, transformCount) {
