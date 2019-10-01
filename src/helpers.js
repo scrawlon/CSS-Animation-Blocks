@@ -12,16 +12,12 @@ function addAnimationEventListeners(element) {
   function handleAnimationStart(event) {
     const { animationName } = event;
 
-    // console.log({element});
-    console.log({animationName});
-
     if ( !cssKeyframeProps[animationName] ) {
       cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
     }
 
     /* remove inline styles associated that might override current animation */
     cssKeyframeProps[animationName].forEach((style) => {
-      console.log({style});
       if ( style !== 'transform' ) element.style.removeProperty(style);
     });
   }
@@ -31,17 +27,13 @@ function addAnimationEventListeners(element) {
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
 
-    console.log({remainingAnimations});
-
-    // if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
-
     /* Hold animated CSS property values after animation is removed from element */
     cssKeyframeProps[animationName].forEach((style) => {
       element.style[style] = endStyles.getPropertyValue(style);
     });
 
     if ( !remainingAnimations ) {
-      element.removeEventListener('animationstart', (event) => { handleAnimationStart(event); });
+      element.removeEventListener('animationstart', (event) => handleAnimationStart(event));
       element.removeEventListener('animationend', (event) => handleAnimationEnd(event));
     }
 

@@ -102,14 +102,10 @@ AnimationBlock.prototype.start = function() {
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
       const { animations } = block[animationTimes[nextAnimationIndex]];
 
-      console.log({animations});
-
       if ( !animations ) return false;
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
-
-        console.log({cssAnimation});
 
         if ( !elementSelector ) return false;
         if ( (!cssAnimation || !Array.isArray(cssAnimation)) && (!cssTransform || typeof cssTransform !== 'object') ) return false;
@@ -123,16 +119,11 @@ AnimationBlock.prototype.start = function() {
           let rotateAnimation = false;
           let combinedAnimations = runningAnimations.concat(currentAnimations);
 
-          console.log({runningAnimations});
-          console.log({currentAnimations});
-          console.log({combinedAnimations});
-
           if ( !runningAnimations ) {
             addAnimationEventListeners(element);
           }
 
           setTimeout(() => {
-            // console.log('count');
             transformTypes.forEach((transformType) => {
               if ( transformType === 'rotate' ) {
                 rotateAnimation = cssTransform[transformType];
@@ -157,12 +148,9 @@ AnimationBlock.prototype.start = function() {
     if ( nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
     } else if ( loop ) {
-      /* loop code goes here */
       startTime = timestamp;
       nextAnimationIndex = 0;
       resetDomElements(dom);
-      // console.log({dom});
-      // dom = {};
       requestAnimationFrame(animation);
     }
   }
