@@ -1,20 +1,24 @@
 
 const styleSheets = document.styleSheets;
 let cssKeyframeProps = {};
+let dom = {};
 
 function addAnimationEventListeners(element) {
   const { tagName, className } = element;
-  const elementKey = `${tagName}.${className}`;
-
-  if ( !cssKeyframeProps[elementKey] ) cssKeyframeProps[elementKey] = {};
 
   element.addEventListener('animationstart', (event) => {
     const { animationName } = event;
 
-    if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
+    // console.log({element});
+    console.log({animationName});
+
+    if ( !cssKeyframeProps[animationName] ) {
+      cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+    }
 
     /* remove inline styles associated that might override current animation */
-    cssKeyframeProps[elementKey][animationName].forEach((style) => {
+    cssKeyframeProps[animationName].forEach((style) => {
+      console.log({style});
       if ( style !== 'transform' ) element.style.removeProperty(style);
     });
   });
@@ -24,15 +28,28 @@ function addAnimationEventListeners(element) {
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
 
-    if ( !cssKeyframeProps[elementKey][animationName] ) cssKeyframeProps[elementKey][animationName] = getKeyframeProps(styleSheets, animationName);
+    console.log({remainingAnimations});
+
+    // if ( !cssKeyframeProps[animationName] ) cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
 
     /* Hold animated CSS property values after animation is removed from element */
-    cssKeyframeProps[elementKey][animationName].forEach((style) => {
+    cssKeyframeProps[animationName].forEach((style) => {
       element.style[style] = endStyles.getPropertyValue(style);
     });
 
     element.style.animation = remainingAnimations;
   });
+}
+
+function cacheDomElement(elementSelector, transformCount) {
+  const elements = document.querySelectorAll(elementSelector)
+
+  dom[elementSelector] = {
+    elements: elements,
+    transformWrapLevel: Array(elements.length).fill(0)
+  };
+
+  createTransformWrappers(elementSelector, transformCount);
 }
 
 function createTransformWrappers(elementSelector, totalWrappers) {
@@ -135,6 +152,32 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
+function getTransformWrapElement(element, transformType, transformCount) {
+  let currentElement = element;
+  let count = 0;
+  let firstAvailable = false;
+
+  while ( count < transformCount ) {
+    const parent = currentElement.parentElement;
+
+    if ( parent.classList.contains('transform-wrapper') ) {
+      currentElement = parent;
+    }
+
+    if ( parent.dataset.transform === transformType ) return parent;
+    if ( !firstAvailable && !parent.dataset.transform ) firstAvailable = currentElement;
+
+    count++;
+  }
+
+  if ( firstAvailable ) {
+    firstAvailable.dataset.transform = transformType;
+    return firstAvailable;
+  }
+
+  return currentElement;
+}
+
 function resetDomElements(domElements) {
   const domElementKeys = domElements ? Object.keys(domElements) : false;
 
@@ -147,4 +190,4 @@ function resetDomElements(domElements) {
   });
 }
 
-export { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations, resetDomElements }
+export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetTimes, getTransformWrapElement, resetDomElements }

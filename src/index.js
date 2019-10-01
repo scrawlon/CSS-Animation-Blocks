@@ -1,5 +1,5 @@
 
-import { addAnimationEventListeners, createTransformWrappers, getBlockTime, getGroupOffsetTimes, getKeyframeProps, getRandomInt, getRemainingAnimations, resetDomElements } from './helpers.js';
+import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetTimes, getTransformWrapElement, resetDomElements } from './helpers.js';
 
 function AnimationBlock(block, config) {
   this.block = block;
@@ -85,32 +85,6 @@ function AnimationBlock(block, config) {
   };
 }
 
-function getTransformWrapElement(element, transformType, transformCount) {
-  let currentElement = element;
-  let count = 0;
-  let firstAvailable = false;
-
-  while ( count < transformCount ) {
-    const parent = currentElement.parentElement;
-
-    if ( parent.classList.contains('transform-wrapper') ) {
-      currentElement = parent;
-    }
-
-    if ( parent.dataset.transform === transformType ) return parent;
-    if ( !firstAvailable && !parent.dataset.transform ) firstAvailable = currentElement;
-
-    count++;
-  }
-
-  if ( firstAvailable ) {
-    firstAvailable.dataset.transform = transformType;
-    return firstAvailable;
-  }
-
-  return currentElement;
-}
-
 AnimationBlock.prototype.start = function() {
   const { globalOffsetTime = 0, loop = false } = this.config;
   const block = this.init();
@@ -119,7 +93,6 @@ AnimationBlock.prototype.start = function() {
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
-  let dom = {};
 
   requestAnimationFrame(animation);
 
@@ -129,10 +102,14 @@ AnimationBlock.prototype.start = function() {
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
       const { animations } = block[animationTimes[nextAnimationIndex]];
 
+      console.log({animations});
+
       if ( !animations ) return false;
 
-      animations.forEach((animation) => {
+      animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
+
+        console.log({cssAnimation});
 
         if ( !elementSelector ) return false;
         if ( (!cssAnimation || !Array.isArray(cssAnimation)) && (!cssTransform || typeof cssTransform !== 'object') ) return false;
@@ -140,32 +117,35 @@ AnimationBlock.prototype.start = function() {
 
         dom[elementSelector].elements.forEach((element, index) => {
           const offsetDelayTime = getGroupOffsetTimes(groupOffset);
+          const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
+          const currentAnimations = cssAnimation ? cssAnimation : [];
+          const transformTypes = cssTransform ? Object.keys(cssTransform) : [];
+          let rotateAnimation = false;
+          let combinedAnimations = runningAnimations.concat(currentAnimations);
+
+          console.log({runningAnimations});
+          console.log({currentAnimations});
+          console.log({combinedAnimations});
+
+          if ( !runningAnimations ) {
+            addAnimationEventListeners(element);
+          }
 
           setTimeout(() => {
-            const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
-            const currentAnimations = cssAnimation ? cssAnimation : [];
-            const transformTypes = cssTransform ? Object.keys(cssTransform) : false;
-            let rotateAnimation = false;
-            let combinedAnimations = runningAnimations.concat(currentAnimations);
-            // let currentKeyframeProps = {};
+            // console.log('count');
+            transformTypes.forEach((transformType) => {
+              if ( transformType === 'rotate' ) {
+                rotateAnimation = cssTransform[transformType];
+                combinedAnimations.push(rotateAnimation);
+              } else {
+                const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
 
-            if ( transformTypes ) {
-              transformTypes.forEach((transformType) => {
-                if ( transformType === 'rotate' ) {
-                  rotateAnimation = cssTransform[transformType];
-                  combinedAnimations.push(rotateAnimation);
-                } else {
-                  const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
+                currentElement.style.animation = cssTransform[transformType];
+                addAnimationEventListeners(currentElement);
+              }
+            });
 
-                  currentElement.style.animation = cssTransform[transformType];
-                  addAnimationEventListeners(currentElement);
-                }
-              });
-            }
-
-            element.style.animation = combinedAnimations.join(',');
-
-            if ( cssAnimation ) addAnimationEventListeners(element);
+            if ( combinedAnimations ) element.style.animation = combinedAnimations.join(',');
           }, offsetDelayTime * index);
 
         });
@@ -185,17 +165,6 @@ AnimationBlock.prototype.start = function() {
       // dom = {};
       requestAnimationFrame(animation);
     }
-  }
-
-  function cacheDomElement(elementSelector, transformCount) {
-    const elements = document.querySelectorAll(elementSelector)
-
-    dom[elementSelector] = {
-      elements: elements,
-      transformWrapLevel: Array(elements.length).fill(0)
-    };
-
-    createTransformWrappers(elementSelector, transformCount);
   }
 }
 
