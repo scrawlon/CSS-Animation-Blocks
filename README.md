@@ -49,14 +49,18 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
   display: flex;
   flex-direction: row;
   justify-content: center;
+  flex-wrap: wrap;
   font-size: 1.4rem;
   text-transform: lowercase;
   font-family: sans-serif;
   padding: 0;
-  margin: 0 1em;
+  margin: 0;
 }
 
 .box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 240px;
   height: 180px;
   background: black;
@@ -64,7 +68,8 @@ The following styles create a square red box with _"opacity"_ set to 0 (invisibl
   position: relative;
   border-radius: 10px;
   padding: 0;
-  margin: 0;
+  margin: 1em;
+  overflow: hidden;
 }
 
 h1 {
@@ -72,8 +77,6 @@ h1 {
   text-align: center;
   color: #fff;
   opacity: 0;
-  position: absolute;
-  top: 4%;
   padding: 0;
   margin: 0;
 }
@@ -96,10 +99,10 @@ h1 {
 }
 ```
 
-Opening the html file in a browser now, would show an empty page. Create an Animation Block to apply the _"fade-in"_, _"move-down"_ and _"background-red"_ keyframes to the _"box"_ element.
+Opening the html file in a browser now would show an empty page, because our elements have '0' opacity. Create an Animation Block to apply the _"fade-in"_, _"move-down"_ and _"background-red"_ keyframes to the _"box"_ element.
 
 ### JavaScript
-In the _"index.js"_ file, import the AnimationBlock code and create a new AnimationBlock:
+In the _"index.js"_ file, import the AnimationBlock library and create a new AnimationBlock:
 
 ```JavaScript
 import { AnimationBlock } from 'css-animation-blocks');
@@ -111,7 +114,7 @@ const mainBlock = new AnimationBlock({
         elementSelector: '.box',
         cssAnimation: [
           'fade-in 1s ease normal forwards',
-          'background-colors 1.5s steps(1) normal forwards',
+          'background-colors 1s steps(1) normal forwards',
         ],
         cssTransform: {
           translateY: 'move-down 2s ease normal forwards',
@@ -124,8 +127,8 @@ const mainBlock = new AnimationBlock({
 mainBlock.start();
 ```
 
-At time _"00:00.000"_ we have an _animations_ array containing an array of animation objects. Each animation object:
-* Must have one _"elementSelector"_. The animation above targets _".box"_ (elements with the class "box").
+At time _"00:00.000"_ we have an _animations_ array containing an animation objects. Each animation object:
+* Must have one _"elementSelector"_. The _"elementSelector"_ above targets _".box"_ (all elements with the class "box").
 * Can (optionally) have one _"cssAnimation"_ array containing CSS animation shorthand strings.
 * Can (optionally) have one _"cssTransform"_ object. Object keys should match the transform type, and the values are CSS animation shorthand strings.
 
@@ -168,7 +171,7 @@ mainBlock.start();
 
 We created a new Animation Block named _"boxBlock"_. To nest that block in our _"mainBlock"_, we added a _"blocks"_ array containing the new block.
 
-Even nested blocks can contain nested blocks. Here, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
+Nested blocks can also contain other nested blocks. Here, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
 
 ```JavaScript
 import { AnimationBlock } from 'css-animation-blocks');
@@ -207,7 +210,7 @@ const boxBlock = new AnimationBlock({
         elementSelector: '.box',
         cssAnimation: [
           'fade-in 1s ease normal forwards',
-          'background-red 1.5s steps(1) normal forwards',
+          'background-red 1s steps(1) normal forwards',
         ],
         cssTransform: {
           translateY: 'move-down 2s ease normal forwards',
@@ -249,15 +252,51 @@ const mainBlock = new AnimationBlock({
 mainBlock.start();
 ```
 
+### Group Offset
+
+So far, we've looked at animations on single elements, one _".box"_ and one _"h1"_, but those selectors could apply to multiple elements. Let's duplicate the existing _".box"_ element and see how the animation is applied. Change the _".container"_ div in _"index.html"_ to match this:
+
+```HTML
+<div class="container">
+  <div class="box">
+    <h1>CSS</h1>
+  </div>
+  <div class="box">
+    <h1>Animation</h1>
+  </div>
+  <div class="box">
+    <h1>Blocks</h1>
+  </div>
+</div>
+```
+
+Now, if you reload the page, you should see three boxes all animating at the same time. This is fine, but what if you wanted to run the same animation on those elements, but delay the start of each element to create a "stepped" animation?
+
+Each element in an _"animations"_ array can include a _"groupOffset"_ object with a _"delayTime"_ key, containing a time in milliseconds. If the animation applies to multiple elements, each element will be delayed by the _"groupOffset.delayTime"_ amount. Let's update the first animation in the _"boxBlock"_ and add a _"groupOffset"_:
+
+```JavaScript
+'00:00.000': {
+  blocks: [titleBlock],
+  animations: [
+    {
+      elementSelector: '.box',
+      cssAnimation: [
+        'fade-in 1s ease normal forwards',
+        'background-red 1s steps(1) normal forwards',
+      ],
+      cssTransform: {
+        translateY: 'move-down 2s ease normal forwards',
+      },
+      groupOffset: {
+        delayTime: 300
+      }
+    },
+  ]
+},
+```
+
+Now reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
+
 ## Configuration
 
 Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_ and _"loop"_.
-
-### Group Offset
-
-So far, we've looked at animations on single elements, one _".box"_ and one _"h1"_, but those selectors could apply to multiple elements. Let's duplicate the existing _".box"_ element and see how the animation is applied.
-
-```HTML
-
-
-```
