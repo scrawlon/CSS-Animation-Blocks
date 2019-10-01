@@ -6,7 +6,10 @@ let dom = {};
 function addAnimationEventListeners(element) {
   const { tagName, className } = element;
 
-  element.addEventListener('animationstart', (event) => {
+  element.addEventListener('animationstart', (event) => handleAnimationStart(event));
+  element.addEventListener('animationend', (event) => handleAnimationEnd(event));
+
+  function handleAnimationStart(event) {
     const { animationName } = event;
 
     // console.log({element});
@@ -21,9 +24,9 @@ function addAnimationEventListeners(element) {
       console.log({style});
       if ( style !== 'transform' ) element.style.removeProperty(style);
     });
-  });
+  }
 
-  element.addEventListener('animationend', (event) => {
+  function handleAnimationEnd(event) {
     const { animationName } = event;
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
@@ -37,8 +40,13 @@ function addAnimationEventListeners(element) {
       element.style[style] = endStyles.getPropertyValue(style);
     });
 
+    if ( !remainingAnimations ) {
+      element.removeEventListener('animationstart', (event) => { handleAnimationStart(event); });
+      element.removeEventListener('animationend', (event) => handleAnimationEnd(event));
+    }
+
     element.style.animation = remainingAnimations;
-  });
+  }
 }
 
 function cacheDomElement(elementSelector, transformCount) {
