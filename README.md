@@ -297,6 +297,10 @@ Each element in an _"animations"_ array can include a _"groupOffset"_ object wit
 
 Now reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
 
+What if you want all animations in a block to have the same groupOffset? It's possible to set a default offset for an entire block in the configuration settings.
+
 ## Configuration
 
-Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_ and _"loop"_.
+Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_, _"elementSelector"_ and _"loop"_.
+
+### Group Offset
