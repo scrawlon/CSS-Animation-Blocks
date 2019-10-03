@@ -301,8 +301,76 @@ What if you want all animations in a block to have the same groupOffset? It's po
 
 ## Configuration
 
-Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_, _"elementSelector"_ and _"loop"_.
+Animation Blocks have a second optional parameter for setting configurations. The options are _"defaults"_  and _"loop"_.
+
+For example, you can see the config object here:
+
+```JavaScript
+const mainBlock = new AnimationBlock({
+  '00:01.000': {
+    animations: []
+  }
+},{
+  defaults: {},
+  loop: true
+});
+```
 
 ### Defaults
+When an entire Animation Block targets a group of domElementKeys, it can be tedious to enter the same _"elementSelector"_ and _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
 
-#### Group Offsets
+Any settings you add to the _"defaults"_ config will apply to all objects in the _"animations"_ array that do not already have those settings applied.
+
+#### Default Element Selector
+The _"boxBlock"_ Animation Block we've been working applies animations to _".box"_ elements, and each animation time key includes the same _"elementSelector"_ for _".box"_. We can simplify our code, and save some future typing, by applying a Default Element Selector to this Animation Block.
+
+Here's the same code as before, but using a Default Element Selector:
+
+```JavaScript
+const boxBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [titleBlock],
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards',
+          'background-red 1s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          translateY: 'move-down 2s ease normal forwards',
+        },
+        groupOffset: {
+          delayTime: 300
+        }
+      },
+    ]
+  },
+  '00:05.500': {
+    animations: [
+      {
+        cssAnimation: [
+          'background-red 1.5s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards 1',
+        },
+      }
+    ]
+  },
+  '00:06.500': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease reverse forwards',
+        ],
+      }
+    ]
+  },
+},{
+  defaults: {
+    elementSelector: '.box',
+  }
+});
+```
+
+#### Default Group Offset
