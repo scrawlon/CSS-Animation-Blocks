@@ -303,4 +303,6 @@ What if you want all animations in a block to have the same groupOffset? It's po
 
 Animation Blocks have a second optional parameter for setting configurations. The options are _"groupOffset"_, _"elementSelector"_ and _"loop"_.
 
-### Group Offset
+### Defaults
+
+#### Group Offsets

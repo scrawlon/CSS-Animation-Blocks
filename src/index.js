@@ -11,11 +11,12 @@ function AnimationBlock(block, config) {
   }
   this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
-    const { defaults = {} } = this.config;
     const {
-      elementSelector: defaultElementSelector = false,
-      groupOffset: defaultGroupOffset = false,
-    } = defaults;
+      defaults: {
+        elementSelector: defaultElementSelector = false,
+        groupOffset: defaultGroupOffset = false,
+      }
+    } = this.config;;
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -32,11 +33,15 @@ function AnimationBlock(block, config) {
         /* Add current block's animations */
         if ( animations ) {
           animations.map((animation) => {
-            const { elementSelector } = animation;
+            const { elementSelector, groupOffset } = animation;
 
             console.log({animation});
             if ( !elementSelector && defaultElementSelector ) {
-              animation.elementSelector = defaultElementSelector
+              animation.elementSelector = defaultElementSelector;
+            }
+
+            if ( !groupOffset && defaultGroupOffset ) {
+              animation.groupOffset = defaultGroupOffset;
             }
 
             return animation;
