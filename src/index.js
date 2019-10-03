@@ -11,7 +11,11 @@ function AnimationBlock(block, config) {
   }
   this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
-    let elementTransformKeys = this.elementTransformKeys;
+    const { defaults = {} } = this.config;
+    const {
+      elementSelector: defaultElementSelector = false,
+      groupOffset: defaultGroupOffset = false,
+    } = defaults;
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -19,12 +23,28 @@ function AnimationBlock(block, config) {
       if ( blockTime >= 0 ) {
         const { animations, blocks: importedBlocks } = block[timeString];
 
+        // console.log(block[timeString]);
+
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
         }
 
         /* Add current block's animations */
         if ( animations ) {
+          animations.map((animation) => {
+            const { elementSelector } = animation;
+
+            console.log({animation});
+            if ( !elementSelector && defaultElementSelector ) {
+              animation.elementSelector = defaultElementSelector
+            }
+
+            return animation;
+          });
+          // if ( !blockTimes[blockTime].elementSelector && defaultElementSelector ) {
+          //   blockTimes[blockTime].elementSelector = defaultElementSelector;
+          // }
+
           blockTimes[blockTime].animations
             ? blockTimes[blockTime].animations.push(...animations)
             :  blockTimes[blockTime].animations = animations;
@@ -34,6 +54,15 @@ function AnimationBlock(block, config) {
         if ( importedBlocks ) {
           importedBlocks.forEach((importedBlock) => {
             const importedBlockTimes = importedBlock.init(blockTime);
+            // const { config = {} } = importedBlock
+            // const { defaults = {} } = config;
+            // const {
+            //   elementSelector: defaultElementSelector = false,
+            //   groupOffset: defaultGroupOffset = false,
+            // } = defaults;
+
+            // console.log({defaults});
+            console.log({defaultElementSelector});
 
             if ( importedBlockTimes ) {
               for ( let [time, block] of Object.entries(importedBlockTimes) ) {
@@ -44,6 +73,21 @@ function AnimationBlock(block, config) {
                 if ( !blockTimes[time].animations ) {
                   blockTimes[time].animations = [];
                 }
+
+                // blockTimes[time].animations.map((animation) => {
+                //   const { elementSelector = false } = animation;
+                //
+                //   console.log({animation});
+                //   console.log({elementSelector});
+                //   console.log({defaultElementSelector});
+                //
+                //   if ( !elementSelector && defaultElementSelector ) {
+                //     // console.log('defaultElementSelector');
+                //     // animation.elementSelector = defaultElementSelector;
+                //   }
+                //
+                //   return animation;
+                // });
 
                 blockTimes[time].animations.push(...block.animations);
               }
@@ -59,6 +103,7 @@ function AnimationBlock(block, config) {
   };
   this.elementTransformKeys = function(block) {
     const blockTimes = Object.keys(block);
+    const { defaults } = config;
     let transformKeys = {};
 
     blockTimes.forEach((blockTime) => {
@@ -67,14 +112,15 @@ function AnimationBlock(block, config) {
       if ( animations ) {
         animations.forEach((animation) => {
           const { elementSelector, cssTransform } = animation;
+          const currentElementSelector = elementSelector ? elementSelector : defaults.elementSelector;
 
-          if ( !transformKeys[elementSelector] ) {
-            transformKeys[elementSelector] = new Set();
+          if ( !transformKeys[currentElementSelector] ) {
+            transformKeys[currentElementSelector] = new Set();
           }
 
           if ( cssTransform && typeof cssTransform === 'object' ) {
             Object.keys(cssTransform).forEach((key) => {
-              if ( key !== 'rotate' ) transformKeys[elementSelector].add(key);
+              if ( key !== 'rotate' ) transformKeys[currentElementSelector].add(key);
             });
           }
         });
@@ -86,13 +132,16 @@ function AnimationBlock(block, config) {
 }
 
 AnimationBlock.prototype.start = function() {
-  const { globalOffsetTime = 0, loop = false } = this.config;
+  const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
   const block = this.init();
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
+
+  console.log({block});
+  console.log({defaults: defaults.elementSelector});
 
   requestAnimationFrame(animation);
 
@@ -106,12 +155,13 @@ AnimationBlock.prototype.start = function() {
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
+        const currentElementSelector = elementSelector ? elementSelector : defaults.elementSelector;
 
-        if ( !elementSelector ) return false;
+        if ( !currentElementSelector ) return false;
         if ( (!cssAnimation || !Array.isArray(cssAnimation)) && (!cssTransform || typeof cssTransform !== 'object') ) return false;
-        if ( !dom[elementSelector] ) cacheDomElement(elementSelector, elementTransformKeys[elementSelector].size);
+        if ( !dom[currentElementSelector] ) cacheDomElement(currentElementSelector, elementTransformKeys[currentElementSelector].size);
 
-        dom[elementSelector].elements.forEach((element, index) => {
+        dom[currentElementSelector].elements.forEach((element, index) => {
           const offsetDelayTime = getGroupOffsetTimes(groupOffset);
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
           const currentAnimations = cssAnimation ? cssAnimation : [];
@@ -129,7 +179,7 @@ AnimationBlock.prototype.start = function() {
                 rotateAnimation = cssTransform[transformType];
                 combinedAnimations.push(rotateAnimation);
               } else {
-                const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[elementSelector].size);
+                const currentElement = getTransformWrapElement(element, transformType, elementTransformKeys[currentElementSelector].size);
 
                 currentElement.style.animation = cssTransform[transformType];
                 addAnimationEventListeners(currentElement);
