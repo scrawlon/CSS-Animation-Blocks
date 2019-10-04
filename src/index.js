@@ -3,7 +3,7 @@ import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDela
 
 function AnimationBlock(block, config) {
   this.block = block;
-  this.config = config;
+  this.config = typeof config !== 'undefined' ? config : {};
   this.init = function(globalOffsetTime) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
 
@@ -11,12 +11,11 @@ function AnimationBlock(block, config) {
   }
   this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
+    const { defaults } = this.config;
     const {
-      defaults: {
-        elementSelector: defaultElementSelector = false,
-        groupOffset: defaultGroupOffset = false,
-      }
-    } = this.config;
+      elementSelector: defaultElementSelector = false,
+      groupOffset: defaultGroupOffset = false,
+    } = defaults ? defaults : {};
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -140,7 +139,7 @@ AnimationBlock.prototype.start = function() {
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
-        const currentElementSelector = elementSelector ? elementSelector : defaults.elementSelector;
+        const currentElementSelector = elementSelector ? elementSelector : defaultElementSelector;
 
         if ( !currentElementSelector ) return false;
         if ( (!cssAnimation || !Array.isArray(cssAnimation)) && (!cssTransform || typeof cssTransform !== 'object') ) return false;
