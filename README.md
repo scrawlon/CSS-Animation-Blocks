@@ -317,7 +317,7 @@ const mainBlock = new AnimationBlock({
 ```
 
 ### Defaults
-When an entire Animation Block targets a group of domElementKeys, it can be tedious to enter the same _"elementSelector"_ and _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
+When an entire Animation Block targets a single _"elementSelector"_, it can be tedious to enter the same _"elementSelector"_ and _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
 
 Any settings you add to the _"defaults"_ config will apply to all objects in the _"animations"_ array that do not already have those settings applied.
 
@@ -373,4 +373,8 @@ const boxBlock = new AnimationBlock({
 });
 ```
 
+As you can see, all _"elementSelector"_ keys were removed from individual _"animations"_ array objects, and a _"defaults.elementSelector"_ setting was added to the config object. If you reload the page, the animation should continue working as before.
+
 #### Default Group Offset
+
+When an entire Animation Block applies to an _"elementSelector"_ that targets multiple elements, and you want to apply the same _"groupOffset"_ to all animations, it can be tedious to add same setting over-and-over, and also very tedious to change that setting later. That's where Default Group Offset comes in handy.

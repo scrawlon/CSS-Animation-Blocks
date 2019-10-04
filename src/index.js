@@ -24,8 +24,6 @@ function AnimationBlock(block, config) {
       if ( blockTime >= 0 ) {
         const { animations, blocks: importedBlocks } = block[timeString];
 
-        // console.log(block[timeString]);
-
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
         }
@@ -46,9 +44,6 @@ function AnimationBlock(block, config) {
 
             return animation;
           });
-          // if ( !blockTimes[blockTime].elementSelector && defaultElementSelector ) {
-          //   blockTimes[blockTime].elementSelector = defaultElementSelector;
-          // }
 
           blockTimes[blockTime].animations
             ? blockTimes[blockTime].animations.push(...animations)
@@ -59,15 +54,6 @@ function AnimationBlock(block, config) {
         if ( importedBlocks ) {
           importedBlocks.forEach((importedBlock) => {
             const importedBlockTimes = importedBlock.init(blockTime);
-            // const { config = {} } = importedBlock
-            // const { defaults = {} } = config;
-            // const {
-            //   elementSelector: defaultElementSelector = false,
-            //   groupOffset: defaultGroupOffset = false,
-            // } = defaults;
-
-            // console.log({defaults});
-            console.log({defaultElementSelector});
 
             if ( importedBlockTimes ) {
               for ( let [time, block] of Object.entries(importedBlockTimes) ) {
@@ -78,21 +64,6 @@ function AnimationBlock(block, config) {
                 if ( !blockTimes[time].animations ) {
                   blockTimes[time].animations = [];
                 }
-
-                // blockTimes[time].animations.map((animation) => {
-                //   const { elementSelector = false } = animation;
-                //
-                //   console.log({animation});
-                //   console.log({elementSelector});
-                //   console.log({defaultElementSelector});
-                //
-                //   if ( !elementSelector && defaultElementSelector ) {
-                //     // console.log('defaultElementSelector');
-                //     // animation.elementSelector = defaultElementSelector;
-                //   }
-                //
-                //   return animation;
-                // });
 
                 blockTimes[time].animations.push(...block.animations);
               }
