@@ -107,7 +107,7 @@ function AnimationBlock(block = {}, config = {}) {
 }
 
 AnimationBlock.prototype.start = function() {
-  const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
+  const { globalOffsetTime = 0, loop = {}, defaults = {} } = this.config;
   const {
     elementSelector: defaultElementSelector = false,
     groupOffset: defaultGroupOffset = false,
@@ -118,10 +118,13 @@ AnimationBlock.prototype.start = function() {
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
+  let { count: loopCount = 0, infinite: loopInfinite = false } = loop;
 
-  console.log({block});
-  console.log({defaultElementSelector});
-  console.log({defaultGroupOffset});
+  console.log({loopCount, loopInfinite});
+
+  // console.log({block});
+  // console.log({defaultElementSelector});
+  // console.log({defaultGroupOffset});
 
   requestAnimationFrame(animation);
 
@@ -192,10 +195,15 @@ AnimationBlock.prototype.start = function() {
     if ( nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
     } else if ( loop ) {
-      startTime = timestamp;
-      nextAnimationIndex = 0;
-      resetDomElements(dom);
-      requestAnimationFrame(animation);
+
+      if ( loopInfinite || loopCount > 0 ) {
+        startTime = timestamp;
+        nextAnimationIndex = 0;
+        resetDomElements(dom);
+        requestAnimationFrame(animation);
+
+        loopCount--;
+      }
     }
   }
 }
