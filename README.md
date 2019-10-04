@@ -377,4 +377,55 @@ As you can see, all _"elementSelector"_ keys were removed from individual _"anim
 
 #### Default Group Offset
 
-When an entire Animation Block applies to an _"elementSelector"_ that targets multiple elements, and you want to apply the same _"groupOffset"_ to all animations, it can be tedious to add same setting over-and-over, and also very tedious to change that setting later. That's where Default Group Offset comes in handy.
+When an entire Animation Block applies to an _"elementSelector"_ targeting multiple elements, and the same _"groupOffset"_ should apply to all animations, it can be tedious to add the same setting over-and-over, especially if you need to change that setting later. This situation can be handled with a Default Group Offset.
+
+Here's the _"boxBlock"_ Animation Block with a Default Group Offset config setting added.
+
+```JavaScript
+const boxBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [titleBlock],
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards',
+          'background-red 1s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          translateY: 'move-down 2s ease normal forwards',
+        },
+      },
+    ]
+  },
+  '00:05.500': {
+    animations: [
+      {
+        cssAnimation: [
+          'background-red 1.5s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards 1',
+        },
+      }
+    ]
+  },
+  '00:06.500': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease reverse forwards',
+        ],
+      }
+    ]
+  },
+},{
+  defaults: {
+    elementSelector: '.box',
+    groupOffset: {
+      delayTime: 300
+    }
+  }
+});
+```
+
+### Loop
