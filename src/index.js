@@ -1,9 +1,9 @@
 
 import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDelayRangeRandomOffset, getTransformWrapElement, resetDomElements } from './helpers.js';
 
-function AnimationBlock(block, config) {
+function AnimationBlock(block = {}, config = {}) {
   this.block = block;
-  this.config = typeof config !== 'undefined' ? config : {};
+  this.config = config;
   this.init = function(globalOffsetTime) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
 
@@ -11,11 +11,11 @@ function AnimationBlock(block, config) {
   }
   this.processedBlock = function(globalOffsetTime) {
     let blockTimes = {};
-    const { defaults } = this.config;
+    const { defaults = {} } = this.config;
     const {
       elementSelector: defaultElementSelector = false,
       groupOffset: defaultGroupOffset = false,
-    } = defaults ? defaults : {};
+    } = defaults;
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -107,15 +107,11 @@ function AnimationBlock(block, config) {
 }
 
 AnimationBlock.prototype.start = function() {
-  // const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
+  const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
   const {
-    globalOffsetTime = 0,
-    loop = false,
-    defaults: {
-      elementSelector: defaultElementSelector = false,
-      groupOffset: defaultGroupOffset = false,
-    }
-  } = this.config;
+    elementSelector: defaultElementSelector = false,
+    groupOffset: defaultGroupOffset = false,
+  } = defaults;
   const block = this.init();
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
