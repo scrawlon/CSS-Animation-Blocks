@@ -105,15 +105,13 @@ function getBlockTime(timeString, globalOffsetTime) {
   return -1;
 }
 
-function getGroupOffsetTimes(groupOffset) {
-  if ( !groupOffset ) return 0;
+function getDelayRangeRandomOffset(groupOffset) {
+  const { delayTime, delayRange } = groupOffset;
 
-  const { delayTime, randomMinMaxDelayTimes } = groupOffset;
+  if ( delayTime && typeof delayTime === 'number' ) return delayTime;
 
-  if ( delayTime && delayTime === Math.floor(delayTime) ) {
-    return delayTime;
-  } else if ( randomMinMaxDelayTimes && Array.isArray(randomMinMaxDelayTimes) && randomMinMaxDelayTimes.length >= 2 ) {
-    const [ min, max ] = randomMinMaxDelayTimes;
+  if ( delayRange && Array.isArray(delayRange) && delayRange.length >= 2 ) {
+    const [ min, max ] = delayRange;
     return getRandomInt(min, max);
   }
 
@@ -190,4 +188,4 @@ function resetDomElements(domElements) {
   });
 }
 
-export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetTimes, getTransformWrapElement, resetDomElements }
+export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDelayRangeRandomOffset, getTransformWrapElement, resetDomElements }

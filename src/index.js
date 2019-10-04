@@ -1,5 +1,5 @@
 
-import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetTimes, getTransformWrapElement, resetDomElements } from './helpers.js';
+import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDelayRangeRandomOffset, getTransformWrapElement, resetDomElements } from './helpers.js';
 
 function AnimationBlock(block, config) {
   this.block = block;
@@ -16,7 +16,7 @@ function AnimationBlock(block, config) {
         elementSelector: defaultElementSelector = false,
         groupOffset: defaultGroupOffset = false,
       }
-    } = this.config;;
+    } = this.config;
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -108,7 +108,15 @@ function AnimationBlock(block, config) {
 }
 
 AnimationBlock.prototype.start = function() {
-  const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
+  // const { globalOffsetTime = 0, loop = false, defaults = {} } = this.config;
+  const {
+    globalOffsetTime = 0,
+    loop = false,
+    defaults: {
+      elementSelector: defaultElementSelector = false,
+      groupOffset: defaultGroupOffset = false,
+    }
+  } = this.config;
   const block = this.init();
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
@@ -117,7 +125,8 @@ AnimationBlock.prototype.start = function() {
   let startTime;
 
   console.log({block});
-  console.log({defaults: defaults.elementSelector});
+  console.log({defaultElementSelector});
+  console.log({defaultGroupOffset});
 
   requestAnimationFrame(animation);
 
@@ -138,12 +147,26 @@ AnimationBlock.prototype.start = function() {
         if ( !dom[currentElementSelector] ) cacheDomElement(currentElementSelector, elementTransformKeys[currentElementSelector].size);
 
         dom[currentElementSelector].elements.forEach((element, index) => {
-          const offsetDelayTime = getGroupOffsetTimes(groupOffset);
+          const offsetDelayTime = groupOffset ? getDelayRangeRandomOffset(groupOffset)
+            : ( defaultGroupOffset ? getDelayRangeRandomOffset(defaultGroupOffset) : 0 );
+            // ( defaultGroupOffset && defaultGroupOffset.delayTime
+            //   ? defaultGroupOffset.delayTime
+            //   : ( defaultGroupOffset && defaultGroupOffset.delayRange
+            //       ? getDelayRangeRandomOffset(defaultGroupOffset.delayRange)
+            //       : 0 )
+            //     )
+            //   );
+          // const offsetDelayTime = getGroupOffsetTimes(groupOffset);
+          // const offsetDelayTime = groupOffset
+          //   && ( defaultGroupOffset.delayTime ? defaultGroupOffset.delayTime : false
+          //   || defaultGroupOffset.delayRange ? getDelayRangeRandomOffset())
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
           const currentAnimations = cssAnimation ? cssAnimation : [];
           const transformTypes = cssTransform ? Object.keys(cssTransform) : [];
           let rotateAnimation = false;
           let combinedAnimations = runningAnimations.concat(currentAnimations);
+
+          // console.log({offsetDelayTime});
 
           if ( !runningAnimations ) {
             addAnimationEventListeners(element);
