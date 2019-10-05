@@ -21,7 +21,9 @@ function AnimationBlock(block = {}, config = {}) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
 
       if ( blockTime >= 0 ) {
-        const { animations, blocks: importedBlocks } = block[timeString];
+        const { animations, loopEnd = false, blocks: importedBlocks } = block[timeString];
+
+        // console.log('block', block[timeString]);
 
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
@@ -32,7 +34,7 @@ function AnimationBlock(block = {}, config = {}) {
           animations.map((animation) => {
             const { elementSelector, groupOffset } = animation;
 
-            console.log({animation});
+            // console.log({animation});
             if ( !elementSelector && defaultElementSelector ) {
               animation.elementSelector = defaultElementSelector;
             }
@@ -49,6 +51,8 @@ function AnimationBlock(block = {}, config = {}) {
             :  blockTimes[blockTime].animations = animations;
         }
 
+        blockTimes[blockTime].loopEnd = loopEnd;
+
         /* Add included blocks' animations */
         if ( importedBlocks ) {
           importedBlocks.forEach((importedBlock) => {
@@ -63,6 +67,8 @@ function AnimationBlock(block = {}, config = {}) {
                 if ( !blockTimes[time].animations ) {
                   blockTimes[time].animations = [];
                 }
+
+                // console.log('blockTimes',blockTimes[time]);
 
                 blockTimes[time].animations.push(...block.animations);
               }
@@ -119,6 +125,7 @@ AnimationBlock.prototype.start = function() {
   let nextAnimationIndex = 0;
   let startTime;
   let { count: loopCount = 0, infinite: loopInfinite = false } = loop;
+  let restartLoop = false;
 
   console.log({loopCount, loopInfinite});
 
@@ -132,9 +139,11 @@ AnimationBlock.prototype.start = function() {
     if (!startTime) startTime = timestamp;
 
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
-      const { animations } = block[animationTimes[nextAnimationIndex]];
+      const { animations = [], loopEnd = false } = block[animationTimes[nextAnimationIndex]];
 
-      if ( !animations ) return false;
+      // console.log('block', block[animationTimes[nextAnimationIndex]]);
+
+      // if ( !animations ) return false;
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
@@ -147,24 +156,11 @@ AnimationBlock.prototype.start = function() {
         dom[currentElementSelector].elements.forEach((element, index) => {
           const offsetDelayTime = groupOffset ? getDelayRangeRandomOffset(groupOffset)
             : ( defaultGroupOffset ? getDelayRangeRandomOffset(defaultGroupOffset) : 0 );
-            // ( defaultGroupOffset && defaultGroupOffset.delayTime
-            //   ? defaultGroupOffset.delayTime
-            //   : ( defaultGroupOffset && defaultGroupOffset.delayRange
-            //       ? getDelayRangeRandomOffset(defaultGroupOffset.delayRange)
-            //       : 0 )
-            //     )
-            //   );
-          // const offsetDelayTime = getGroupOffsetTimes(groupOffset);
-          // const offsetDelayTime = groupOffset
-          //   && ( defaultGroupOffset.delayTime ? defaultGroupOffset.delayTime : false
-          //   || defaultGroupOffset.delayRange ? getDelayRangeRandomOffset())
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
           const currentAnimations = cssAnimation ? cssAnimation : [];
           const transformTypes = cssTransform ? Object.keys(cssTransform) : [];
           let rotateAnimation = false;
           let combinedAnimations = runningAnimations.concat(currentAnimations);
-
-          // console.log({offsetDelayTime});
 
           if ( !runningAnimations ) {
             addAnimationEventListeners(element);
@@ -189,12 +185,17 @@ AnimationBlock.prototype.start = function() {
         });
       });
 
+      console.log({loopEnd, time: animationTimes[nextAnimationIndex]});
+
+      if ( loopEnd ) restartLoop = true;
+
       nextAnimationIndex++;
     }
 
-    if ( nextAnimationIndex <= lastAnimationIndex ) {
+    if ( !restartLoop && nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
     } else if ( loop ) {
+      console.log({loop});
 
       if ( loopInfinite || loopCount > 0 ) {
         startTime = timestamp;
@@ -204,6 +205,8 @@ AnimationBlock.prototype.start = function() {
 
         loopCount--;
       }
+
+      restartLoop = false;
     }
   }
 }
