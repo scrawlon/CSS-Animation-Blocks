@@ -34,7 +34,6 @@ function AnimationBlock(block = {}, config = {}) {
           animations.map((animation) => {
             const { elementSelector, groupOffset } = animation;
 
-            // console.log({animation});
             if ( !elementSelector && defaultElementSelector ) {
               animation.elementSelector = defaultElementSelector;
             }
@@ -68,7 +67,7 @@ function AnimationBlock(block = {}, config = {}) {
                   blockTimes[time].animations = [];
                 }
 
-                // console.log('blockTimes',blockTimes[time]);
+                console.log('blockTimes',blockTimes[time]);
 
                 blockTimes[time].animations.push(...block.animations);
               }
@@ -124,7 +123,7 @@ AnimationBlock.prototype.start = function() {
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
-  let { count: loopCount = 1, infinite: loopInfinite = false } = loop;
+  let { count: loopCount = 0, infinite: loopInfinite = false } = loop;
   let restartLoop = false;
 
   console.log({loopCount, loopInfinite});
@@ -140,10 +139,6 @@ AnimationBlock.prototype.start = function() {
 
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
       const { animations = [], loopEnd = false } = block[animationTimes[nextAnimationIndex]];
-
-      // console.log('block', block[animationTimes[nextAnimationIndex]]);
-
-      // if ( !animations ) return false;
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
@@ -187,7 +182,7 @@ AnimationBlock.prototype.start = function() {
 
       console.log({loopEnd, time: animationTimes[nextAnimationIndex]});
 
-      if ( loopEnd ) restartLoop = true;
+      if ( loopEnd && (loopCount || loopInfinite) ) restartLoop = true;
 
       nextAnimationIndex++;
     }
