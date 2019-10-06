@@ -124,7 +124,7 @@ AnimationBlock.prototype.start = function() {
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
-  let { count: loopCount = 0, infinite: loopInfinite = false } = loop;
+  let { count: loopCount = 1, infinite: loopInfinite = false } = loop;
   let restartLoop = false;
 
   console.log({loopCount, loopInfinite});
@@ -197,13 +197,13 @@ AnimationBlock.prototype.start = function() {
     } else if ( loop ) {
       console.log({loop});
 
+      loopCount--;
+
       if ( loopInfinite || loopCount > 0 ) {
         startTime = timestamp;
         nextAnimationIndex = 0;
         resetDomElements(dom);
         requestAnimationFrame(animation);
-
-        loopCount--;
       }
 
       restartLoop = false;
