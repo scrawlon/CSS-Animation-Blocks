@@ -105,7 +105,7 @@ function getBlockTime(timeString, globalOffsetTime) {
   return -1;
 }
 
-function getDelayRangeRandomOffset(groupOffset) {
+function getGroupOffsetValue(groupOffset) {
   const { delayTime, delayRange } = groupOffset;
 
   if ( delayTime && typeof delayTime === 'number' ) return delayTime;
@@ -188,4 +188,4 @@ function resetDomElements(domElements) {
   });
 }
 
-export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDelayRangeRandomOffset, getTransformWrapElement, resetDomElements }
+export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetValue, getTransformWrapElement, resetDomElements }

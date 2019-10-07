@@ -1,5 +1,5 @@
 
-import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getDelayRangeRandomOffset, getTransformWrapElement, resetDomElements } from './helpers.js';
+import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetValue, getTransformWrapElement, resetDomElements } from './helpers.js';
 
 function AnimationBlock(block = {}, config = {}) {
   this.block = block;
@@ -67,7 +67,7 @@ function AnimationBlock(block = {}, config = {}) {
                   blockTimes[time].animations = [];
                 }
 
-                console.log('blockTimes',blockTimes[time]);
+                console.log('imported blockTimes', blockTimes[time]);
 
                 blockTimes[time].animations.push(...block.animations);
               }
@@ -149,8 +149,8 @@ AnimationBlock.prototype.start = function() {
         if ( !dom[currentElementSelector] ) cacheDomElement(currentElementSelector, elementTransformKeys[currentElementSelector].size);
 
         dom[currentElementSelector].elements.forEach((element, index) => {
-          const offsetDelayTime = groupOffset ? getDelayRangeRandomOffset(groupOffset)
-            : ( defaultGroupOffset ? getDelayRangeRandomOffset(defaultGroupOffset) : 0 );
+          const offsetDelayTime = groupOffset ? getGroupOffsetValue(groupOffset)
+            : ( defaultGroupOffset ? getGroupOffsetValue(defaultGroupOffset) : 0 );
           const runningAnimations = element.style.animation ? element.style.animation.split(',') : [];
           const currentAnimations = cssAnimation ? cssAnimation : [];
           const transformTypes = cssTransform ? Object.keys(cssTransform) : [];
