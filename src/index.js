@@ -4,12 +4,13 @@ import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGrou
 function AnimationBlock(block = {}, config = {}) {
   this.block = block;
   this.config = config;
-  this.init = function(globalOffsetTime) {
+  this.init = function(globalOffsetTime, configLoopEnd) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
+    configLoopEnd = configLoopEnd ? getBlockTime(configLoopEnd) : false;
 
-    return this.processedBlock(globalOffsetTime);
+    return this.processedBlock(globalOffsetTime, configLoopEnd);
   }
-  this.processedBlock = function(globalOffsetTime) {
+  this.processedBlock = function(globalOffsetTime, configLoopEnd) {
     let blockTimes = {};
     const { defaults = {} } = this.config;
     const {
@@ -17,8 +18,20 @@ function AnimationBlock(block = {}, config = {}) {
       groupOffset: defaultGroupOffset = false,
     } = defaults;
 
+    if ( configLoopEnd ) {
+      console.log({configLoopEnd});
+      
+      if ( !blockTimes[configLoopEnd] ) {
+        blockTimes[configLoopEnd] = {
+          loopEnd: true
+        };
+      }
+    }
+
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
+
+      console.log({blockTime, timeString});
 
       if ( blockTime >= 0 ) {
         const { animations, loopEnd = false, blocks: importedBlocks } = block[timeString];
@@ -113,18 +126,19 @@ function AnimationBlock(block = {}, config = {}) {
 
 AnimationBlock.prototype.start = function() {
   const { globalOffsetTime = 0, loop = {}, defaults = {} } = this.config;
+  const { count = 1, infinite: loopInfinite = false, endTime: configLoopEnd = false } = loop;
   const {
     elementSelector: defaultElementSelector = false,
     groupOffset: defaultGroupOffset = false,
   } = defaults;
-  const block = this.init();
+  const block = this.init(0, configLoopEnd);
   const elementTransformKeys = this.elementTransformKeys(block);
   const animationTimes = Object.keys(block);
   const lastAnimationIndex = animationTimes.length - 1;
   let nextAnimationIndex = 0;
   let startTime;
-  let { count: loopCount = 0, infinite: loopInfinite = false } = loop;
   let restartLoop = false;
+  let loopCount = count;
 
   console.log({loopCount, loopInfinite});
 

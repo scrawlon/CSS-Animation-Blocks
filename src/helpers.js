@@ -91,7 +91,7 @@ function createTransformWrappers(elementSelector, totalWrappers) {
   });
 }
 
-function getBlockTime(timeString, globalOffsetTime) {
+function getBlockTime(timeString, globalOffsetTime = 0) {
   const time = timeString.split(':');
 
   /* Convert human-readable time "00:00.000" keys into milliseconds */
