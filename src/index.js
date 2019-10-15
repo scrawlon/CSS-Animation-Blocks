@@ -1,92 +1,100 @@
 
-import { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetValue, getTransformWrapElement, resetDomElements } from './helpers.js';
+import {
+  addAnimationEventListeners,
+  cacheDomElement,
+  dom,
+  getBlockTime,
+  getGroupOffsetValue,
+  getTransformWrapElement,
+  resetDomElements
+} from './helpers.js';
 
 function AnimationBlock(block = {}, config = {}) {
   this.block = block;
   this.config = config;
-  this.init = function(globalOffsetTime, configLoopEnd) {
+  this.init = function(globalOffsetTime, outerLoopEnd) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
-    configLoopEnd = configLoopEnd ? getBlockTime(configLoopEnd) : false;
 
-    return this.processedBlock(globalOffsetTime, configLoopEnd);
+    return this.processedBlock(globalOffsetTime, outerLoopEnd);
   }
-  this.processedBlock = function(globalOffsetTime, configLoopEnd) {
-    let blockTimes = {};
+  this.processedBlock = function(globalOffsetTime, outerLoopEnd) {
     const { defaults = {} } = this.config;
+    // const { loop = {}, defaults = {} } = this.config;
+    // const { count = 1, infinite: loopInfinite = false, endTime: configLoopEnd = false } = loop;
     const {
       elementSelector: defaultElementSelector = false,
       groupOffset: defaultGroupOffset = false,
     } = defaults;
+    let blockTimes = {};
+    // let loopCount = count;
 
-    if ( configLoopEnd ) {
-      console.log({configLoopEnd});
-      
-      if ( !blockTimes[configLoopEnd] ) {
-        blockTimes[configLoopEnd] = {
-          loopEnd: true
-        };
-      }
+    if ( globalOffsetTime === 0 && outerLoopEnd ) {
+      const outerLoopEndBlockTime = getBlockTime(outerLoopEnd);
+      if ( !blockTimes[outerLoopEndBlockTime] ) blockTimes[outerLoopEndBlockTime] = {};
+      if ( !blockTimes[outerLoopEndBlockTime].loopEnd ) blockTimes[outerLoopEndBlockTime].loopEnd = true;
     }
+
+    console.log({outerLoopEnd});
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
 
-      console.log({blockTime, timeString});
+      // console.log({blockTime, timeString});
 
       if ( blockTime >= 0 ) {
-        const { animations, loopEnd = false, blocks: importedBlocks } = block[timeString];
+        const { animations = [], blocks: importedBlocks = [] } = block[timeString];
 
-        // console.log('block', block[timeString]);
+        // if ( loopEnd ) {
+        //   console.log('block', timeString, block[timeString]);
+        // }
 
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
         }
 
         /* Add current block's animations */
-        if ( animations ) {
-          animations.map((animation) => {
-            const { elementSelector, groupOffset } = animation;
+        animations.map((animation) => {
+          const { elementSelector, groupOffset } = animation;
 
-            if ( !elementSelector && defaultElementSelector ) {
-              animation.elementSelector = defaultElementSelector;
-            }
+          if ( !elementSelector && defaultElementSelector ) {
+            animation.elementSelector = defaultElementSelector;
+          }
 
-            if ( !groupOffset && defaultGroupOffset ) {
-              animation.groupOffset = defaultGroupOffset;
-            }
+          if ( !groupOffset && defaultGroupOffset ) {
+            animation.groupOffset = defaultGroupOffset;
+          }
 
-            return animation;
-          });
+          return animation;
+        });
 
-          blockTimes[blockTime].animations
-            ? blockTimes[blockTime].animations.push(...animations)
-            :  blockTimes[blockTime].animations = animations;
-        }
+        blockTimes[blockTime].animations
+          ? blockTimes[blockTime].animations.push(...animations)
+          :  blockTimes[blockTime].animations = animations;
 
-        blockTimes[blockTime].loopEnd = loopEnd;
+        // blockTimes[blockTime].loopEnd = loopEnd;
 
         /* Add included blocks' animations */
-        if ( importedBlocks ) {
-          importedBlocks.forEach((importedBlock) => {
-            const importedBlockTimes = importedBlock.init(blockTime);
+        importedBlocks.forEach((importedBlock) => {
+          const importedBlockTimes = importedBlock.init(blockTime, outerLoopEnd);
 
-            if ( importedBlockTimes ) {
-              for ( let [time, block] of Object.entries(importedBlockTimes) ) {
-                if ( !blockTimes[time] ) {
-                  blockTimes[time] = {};
-                }
+          if ( importedBlockTimes ) {
+            for ( let [time, block] of Object.entries(importedBlockTimes) ) {
+              if ( !blockTimes[time] ) {
+                blockTimes[time] = {};
+              }
 
-                if ( !blockTimes[time].animations ) {
-                  blockTimes[time].animations = [];
-                }
+              // console.log({time, configLoopEnd});
 
-                console.log('imported blockTimes', blockTimes[time]);
+              if ( !blockTimes[time].animations ) {
+                blockTimes[time].animations = [];
+              }
 
+              if ( block.animations ) {
                 blockTimes[time].animations.push(...block.animations);
               }
             }
-          });
-        }
+          }
+        });
       } else {
         console.log(`Invalid time: ${timeString}`);
       }
@@ -142,7 +150,7 @@ AnimationBlock.prototype.start = function() {
 
   console.log({loopCount, loopInfinite});
 
-  // console.log({block});
+  console.log({block});
   // console.log({defaultElementSelector});
   // console.log({defaultGroupOffset});
 
@@ -203,7 +211,7 @@ AnimationBlock.prototype.start = function() {
 
     if ( !restartLoop && nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
-    } else if ( loop ) {
+    } else if ( restartLoop && loop ) {
       console.log({loop});
 
       loopCount--;

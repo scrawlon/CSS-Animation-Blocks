@@ -188,4 +188,12 @@ function resetDomElements(domElements) {
   });
 }
 
-export { addAnimationEventListeners, cacheDomElement, dom, getBlockTime, getGroupOffsetValue, getTransformWrapElement, resetDomElements }
+export {
+  addAnimationEventListeners,
+  cacheDomElement,
+  dom,
+  getBlockTime,
+  getGroupOffsetValue,
+  getTransformWrapElement,
+  resetDomElements
+}
