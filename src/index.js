@@ -19,14 +19,11 @@ function AnimationBlock(block = {}, config = {}) {
   }
   this.processedBlock = function(globalOffsetTime, outerLoopEnd) {
     const { defaults = {} } = this.config;
-    // const { loop = {}, defaults = {} } = this.config;
-    // const { count = 1, infinite: loopInfinite = false, endTime: configLoopEnd = false } = loop;
     const {
       elementSelector: defaultElementSelector = false,
       groupOffset: defaultGroupOffset = false,
     } = defaults;
     let blockTimes = {};
-    // let loopCount = count;
 
     if ( globalOffsetTime === 0 && outerLoopEnd ) {
       const outerLoopEndBlockTime = getBlockTime(outerLoopEnd);
@@ -39,14 +36,8 @@ function AnimationBlock(block = {}, config = {}) {
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
 
-      // console.log({blockTime, timeString});
-
       if ( blockTime >= 0 ) {
         const { animations = [], blocks: importedBlocks = [] } = block[timeString];
-
-        // if ( loopEnd ) {
-        //   console.log('block', timeString, block[timeString]);
-        // }
 
         if ( !blockTimes[blockTime] ) {
           blockTimes[blockTime] = {};
@@ -76,14 +67,24 @@ function AnimationBlock(block = {}, config = {}) {
         /* Add included blocks' animations */
         importedBlocks.forEach((importedBlock) => {
           const importedBlockTimes = importedBlock.init(blockTime, outerLoopEnd);
+          const { loop = {}, defaults = {} } = importedBlock.config;
+          const { count = 1, infinite: loopInfinite = false, endTime: configLoopEndTime = false } = loop;
+          const importedConfigLoopEndTime = configLoopEndTime ? getBlockTime(configLoopEndTime) + blockTime : false;
+          // let loopCount = 0;
+          let loopDuration = importedConfigLoopEndTime ? importedConfigLoopEndTime - blockTime : 0;
+
+          console.log({count, importedConfigLoopEndTime, loopDuration});
+          // console.log({importedBlockTimes});
 
           if ( importedBlockTimes ) {
+            insertImportedAnimations(importedBlockTimes);
+          }
+
+          function insertImportedAnimations(importedBlockTimes) {
             for ( let [time, block] of Object.entries(importedBlockTimes) ) {
               if ( !blockTimes[time] ) {
                 blockTimes[time] = {};
               }
-
-              // console.log({time, configLoopEnd});
 
               if ( !blockTimes[time].animations ) {
                 blockTimes[time].animations = [];
@@ -93,6 +94,39 @@ function AnimationBlock(block = {}, config = {}) {
                 blockTimes[time].animations.push(...block.animations);
               }
             }
+          }
+
+          /* repeat blocks that are looped */
+          if ( configLoopEndTime && count > 1 ) {
+            [...Array(count).keys()].forEach((loopCount) => {
+              const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
+              const importedBlockTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEnd);
+
+              if ( loopCount && importedConfigLoopEndTime ) {
+                console.log({loopCount, importedBlockLoopInsertTime});
+                insertImportedAnimations(importedBlockTimes);
+              }
+
+            });
+            // while ( loopCount < count ) {
+            //   const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
+            //
+            //   if ( loopCount && importedConfigLoopEndTime ) {
+            //     // console.log(`insert loop #${loopCount} at ${importedBlockLoopInsertTime}`);
+            //     //
+            //     // if ( !this.block[importedBlockLoopInsertTime] ) {
+            //     //   blockTimes[importedBlockLoopInsertTime] = {};
+            //     // }
+            //     //
+            //     // if ( !blockTimes[importedBlockLoopInsertTime].blocks ) {
+            //     //   blockTimes[importedBlockLoopInsertTime].blocks = [];
+            //     // }
+            //     //
+            //     // blockTimes[importedBlockLoopInsertTime].blocks.push(importedBlock);
+            //   }
+            //
+            //   loopCount++;
+            // }
           }
         });
       } else {
