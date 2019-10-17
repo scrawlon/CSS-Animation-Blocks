@@ -12,26 +12,26 @@ import {
 function AnimationBlock(block = {}, config = {}) {
   this.block = block;
   this.config = config;
-  this.init = function(globalOffsetTime, outerLoopEnd) {
+  this.init = function(globalOffsetTime, outerLoopEndTime = 0) {
     globalOffsetTime = typeof globalOffsetTime !== 'undefined' ? globalOffsetTime : 0;
 
-    return this.processedBlock(globalOffsetTime, outerLoopEnd);
+    return this.processedBlock(globalOffsetTime, outerLoopEndTime);
   }
-  this.processedBlock = function(globalOffsetTime, outerLoopEnd) {
+  this.processedBlock = function(globalOffsetTime, outerLoopEndTime) {
     const { defaults = {} } = this.config;
     const {
       elementSelector: defaultElementSelector = false,
       groupOffset: defaultGroupOffset = false,
     } = defaults;
     let blockTimes = {};
+    const outerLoopEndBlockTime = outerLoopEndTime ? getBlockTime(outerLoopEndTime) : 0;
 
-    if ( globalOffsetTime === 0 && outerLoopEnd ) {
-      const outerLoopEndBlockTime = getBlockTime(outerLoopEnd);
+    if ( globalOffsetTime === 0 && outerLoopEndTime ) {
       if ( !blockTimes[outerLoopEndBlockTime] ) blockTimes[outerLoopEndBlockTime] = {};
       if ( !blockTimes[outerLoopEndBlockTime].loopEnd ) blockTimes[outerLoopEndBlockTime].loopEnd = true;
     }
 
-    console.log({outerLoopEnd});
+    console.log({outerLoopEndTime});
 
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
@@ -66,12 +66,28 @@ function AnimationBlock(block = {}, config = {}) {
 
         /* Add included blocks' animations */
         importedBlocks.forEach((importedBlock) => {
-          const importedBlockTimes = importedBlock.init(blockTime, outerLoopEnd);
+          const importedBlockTimes = importedBlock.init(blockTime, outerLoopEndTime);
           const { loop = {}, defaults = {} } = importedBlock.config;
           const { count = 1, infinite: loopInfinite = false, endTime: configLoopEndTime = false } = loop;
           const importedConfigLoopEndTime = configLoopEndTime ? getBlockTime(configLoopEndTime) + blockTime : false;
           // let loopCount = 0;
           let loopDuration = importedConfigLoopEndTime ? importedConfigLoopEndTime - blockTime : 0;
+          const maxLoopCount = getMaxLoopCount(count, loopDuration, importedConfigLoopEndTime, outerLoopEndBlockTime);
+
+          function getMaxLoopCount(loopCount, loopDuration, loopEndTime, outerLoopEndTime) {
+            if ( !loopCount || !loopDuration || !loopEndTime || !outerLoopEndTime ) return 1;
+            /* reminder -- handle loopInfinite */
+
+            let maxLoopCount = 1;
+
+            while ( maxLoopCount < loopCount && (loopEndTime + (loopDuration * maxLoopCount)) <= outerLoopEndTime ) {
+              maxLoopCount++;
+            }
+
+            console.log({maxLoopCount, loopCount, loopDuration, loopEndTime, outerLoopEndTime});
+
+            return maxLoopCount;
+          }
 
           console.log({count, importedConfigLoopEndTime, loopDuration});
           // console.log({importedBlockTimes});
@@ -97,36 +113,16 @@ function AnimationBlock(block = {}, config = {}) {
           }
 
           /* repeat blocks that are looped */
-          if ( configLoopEndTime && count > 1 ) {
-            [...Array(count).keys()].forEach((loopCount) => {
+          if ( configLoopEndTime && maxLoopCount > 1 ) {
+            [...Array(maxLoopCount).keys()].forEach((loopCount) => {
               const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
-              const importedBlockTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEnd);
+              const importedBlockTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
 
               if ( loopCount && importedConfigLoopEndTime ) {
                 console.log({loopCount, importedBlockLoopInsertTime});
                 insertImportedAnimations(importedBlockTimes);
               }
-
             });
-            // while ( loopCount < count ) {
-            //   const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
-            //
-            //   if ( loopCount && importedConfigLoopEndTime ) {
-            //     // console.log(`insert loop #${loopCount} at ${importedBlockLoopInsertTime}`);
-            //     //
-            //     // if ( !this.block[importedBlockLoopInsertTime] ) {
-            //     //   blockTimes[importedBlockLoopInsertTime] = {};
-            //     // }
-            //     //
-            //     // if ( !blockTimes[importedBlockLoopInsertTime].blocks ) {
-            //     //   blockTimes[importedBlockLoopInsertTime].blocks = [];
-            //     // }
-            //     //
-            //     // blockTimes[importedBlockLoopInsertTime].blocks.push(importedBlock);
-            //   }
-            //
-            //   loopCount++;
-            // }
           }
         });
       } else {
