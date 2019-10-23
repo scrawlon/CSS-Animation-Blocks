@@ -5,6 +5,7 @@ import {
   dom,
   getBlockTime,
   getGroupOffsetValue,
+  getMaxLoopCount,
   getTransformWrapElement,
   resetDomElements
 } from './helpers.js';
@@ -70,19 +71,6 @@ function AnimationBlock(block = {}, config = {}) {
           const realLoopCount = loopInfinite ? 99 : count;
           const maxLoopCount = getMaxLoopCount(realLoopCount, loopDuration, importedConfigLoopEndTime, outerLoopEndBlockTime);
 
-          function getMaxLoopCount(loopCount, loopDuration, loopEndTime, outerLoopEndTime) {
-            if ( !loopCount || !loopDuration || !loopEndTime || !outerLoopEndTime ) return 1;
-            /* reminder -- handle loopInfinite */
-
-            let maxLoopCount = 1;
-
-            while ( maxLoopCount < loopCount && (loopEndTime + (loopDuration * maxLoopCount)) <= outerLoopEndTime ) {
-              maxLoopCount++;
-            }
-
-            return maxLoopCount;
-          }
-
           if ( importedBlockTimes ) {
             insertImportedAnimations(importedBlockTimes, loopDuration);
 
@@ -92,9 +80,9 @@ function AnimationBlock(block = {}, config = {}) {
                 const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
                 const importedBlockInsertTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
 
-                console.log({config: importedBlock.config});
+                console.log({loopCount, importedBlockInsertTimes});
 
-                if ( loopCount && importedConfigLoopEndTime ) {
+                if ( importedConfigLoopEndTime ) {
                   insertImportedAnimations(importedBlockInsertTimes, loopDuration);
                 }
               });

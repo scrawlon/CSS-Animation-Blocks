@@ -137,6 +137,19 @@ function getKeyframeProps(styleSheets, animationName) {
   return props;
 }
 
+function getMaxLoopCount(loopCount, loopDuration, loopEndTime, outerLoopEndTime) {
+  if ( !loopCount || !loopDuration || !loopEndTime || !outerLoopEndTime ) return 1;
+  /* reminder -- handle loopInfinite */
+
+  let maxLoopCount = 1;
+
+  while ( maxLoopCount < loopCount && (loopEndTime + (loopDuration * maxLoopCount)) <= outerLoopEndTime ) {
+    maxLoopCount++;
+  }
+
+  return maxLoopCount;
+}
+
 function getRemainingAnimations(element, animationName) {
   const animations = element.style.animation.split(',');
   return animations.filter((animation) => {
@@ -194,6 +207,7 @@ export {
   dom,
   getBlockTime,
   getGroupOffsetValue,
+  getMaxLoopCount,
   getTransformWrapElement,
   resetDomElements
 }
