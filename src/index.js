@@ -31,8 +31,6 @@ function AnimationBlock(block = {}, config = {}) {
       if ( !blockTimes[outerLoopEndBlockTime].loopEnd ) blockTimes[outerLoopEndBlockTime].loopEnd = true;
     }
 
-    console.log({outerLoopEndTime});
-
     for ( const timeString in this.block ) {
       const blockTime = getBlockTime(timeString, globalOffsetTime);
 
@@ -62,17 +60,15 @@ function AnimationBlock(block = {}, config = {}) {
           ? blockTimes[blockTime].animations.push(...animations)
           :  blockTimes[blockTime].animations = animations;
 
-        // blockTimes[blockTime].loopEnd = loopEnd;
-
         /* Add included blocks' animations */
         importedBlocks.forEach((importedBlock) => {
           const importedBlockTimes = importedBlock.init(blockTime, outerLoopEndTime);
           const { loop = {}, defaults = {} } = importedBlock.config;
           const { count = 1, infinite: loopInfinite = false, endTime: configLoopEndTime = false } = loop;
           const importedConfigLoopEndTime = configLoopEndTime ? getBlockTime(configLoopEndTime) + blockTime : false;
-          // let loopCount = 0;
           let loopDuration = importedConfigLoopEndTime ? importedConfigLoopEndTime - blockTime : 0;
-          const maxLoopCount = getMaxLoopCount(count, loopDuration, importedConfigLoopEndTime, outerLoopEndBlockTime);
+          const realLoopCount = loopInfinite ? 99 : count;
+          const maxLoopCount = getMaxLoopCount(realLoopCount, loopDuration, importedConfigLoopEndTime, outerLoopEndBlockTime);
 
           function getMaxLoopCount(loopCount, loopDuration, loopEndTime, outerLoopEndTime) {
             if ( !loopCount || !loopDuration || !loopEndTime || !outerLoopEndTime ) return 1;
@@ -84,51 +80,76 @@ function AnimationBlock(block = {}, config = {}) {
               maxLoopCount++;
             }
 
-            console.log({maxLoopCount, loopCount, loopDuration, loopEndTime, outerLoopEndTime});
-
             return maxLoopCount;
           }
 
-          console.log({count, importedConfigLoopEndTime, loopDuration});
-          // console.log({importedBlockTimes});
-
           if ( importedBlockTimes ) {
-            insertImportedAnimations(importedBlockTimes);
-          }
+            insertImportedAnimations(importedBlockTimes, loopDuration);
 
-          function insertImportedAnimations(importedBlockTimes) {
-            for ( let [time, block] of Object.entries(importedBlockTimes) ) {
-              if ( !blockTimes[time] ) {
-                blockTimes[time] = {};
-              }
+            /* repeat blocks that are looped */
+            if ( configLoopEndTime && maxLoopCount > 1 ) {
+              [...Array(maxLoopCount).keys()].forEach((loopCount) => {
+                const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
+                const importedBlockInsertTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
 
-              if ( !blockTimes[time].animations ) {
-                blockTimes[time].animations = [];
-              }
+                console.log({config: importedBlock.config});
 
-              if ( block.animations ) {
-                blockTimes[time].animations.push(...block.animations);
-              }
+                if ( loopCount && importedConfigLoopEndTime ) {
+                  // console.log({loopCount, importedBlockLoopInsertTime});
+                  insertImportedAnimations(importedBlockInsertTimes, loopDuration);
+                }
+              });
             }
-          }
-
-          /* repeat blocks that are looped */
-          if ( configLoopEndTime && maxLoopCount > 1 ) {
-            [...Array(maxLoopCount).keys()].forEach((loopCount) => {
-              const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
-              const importedBlockTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
-
-              if ( loopCount && importedConfigLoopEndTime ) {
-                console.log({loopCount, importedBlockLoopInsertTime});
-                insertImportedAnimations(importedBlockTimes);
-              }
-            });
           }
         });
       } else {
         console.log(`Invalid time: ${timeString}`);
       }
     }
+
+    function insertImportedAnimations(importedBlockTimes, loopDuration) {
+      let startTime = 0;
+      let currentEndLoopTime = 0;
+
+      for ( let [time, block] of Object.entries(importedBlockTimes) ) {
+        time = parseInt(time);
+
+        if ( !startTime ) {
+          startTime = time;
+          currentEndLoopTime = startTime + parseInt(loopDuration);
+        }
+
+        if ( !loopDuration ) {
+          insertBlockTimes(block, time);
+        }
+
+        console.log({time, currentEndLoopTime, loopDuration});
+
+        // time <= currentEndLoopTime && insertBlockTimes(block, time);
+
+        if ( time <= currentEndLoopTime ) insertBlockTimes(block, time);
+      }
+    }
+
+    function insertBlockTimes(block, time) {
+      // console.log({time, blockTimes});
+
+      if ( !blockTimes[time] ) {
+        blockTimes[time] = {};
+      }
+
+      if ( !blockTimes[time].animations ) {
+        blockTimes[time].animations = [];
+      }
+
+      if ( block.animations ) {
+        blockTimes[time].animations.push(...block.animations);
+      }
+
+      // console.log({blockTimesTime: blockTimes[time], blockTimes});
+    }
+
+    console.log({blockTimes});
 
     return blockTimes;
   };
