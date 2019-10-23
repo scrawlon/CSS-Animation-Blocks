@@ -80,9 +80,7 @@ function AnimationBlock(block = {}, config = {}) {
                 const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
                 const importedBlockInsertTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
 
-                console.log({loopCount, importedBlockInsertTimes});
-
-                if ( importedConfigLoopEndTime ) {
+                if ( importedBlockInsertTimes && loopDuration ) {
                   insertImportedAnimations(importedBlockInsertTimes, loopDuration);
                 }
               });
