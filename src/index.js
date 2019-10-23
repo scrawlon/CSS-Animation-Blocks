@@ -95,7 +95,6 @@ function AnimationBlock(block = {}, config = {}) {
                 console.log({config: importedBlock.config});
 
                 if ( loopCount && importedConfigLoopEndTime ) {
-                  // console.log({loopCount, importedBlockLoopInsertTime});
                   insertImportedAnimations(importedBlockInsertTimes, loopDuration);
                 }
               });
@@ -123,17 +122,11 @@ function AnimationBlock(block = {}, config = {}) {
           insertBlockTimes(block, time);
         }
 
-        console.log({time, currentEndLoopTime, loopDuration});
-
-        // time <= currentEndLoopTime && insertBlockTimes(block, time);
-
         if ( time <= currentEndLoopTime ) insertBlockTimes(block, time);
       }
     }
 
     function insertBlockTimes(block, time) {
-      // console.log({time, blockTimes});
-
       if ( !blockTimes[time] ) {
         blockTimes[time] = {};
       }
@@ -145,11 +138,7 @@ function AnimationBlock(block = {}, config = {}) {
       if ( block.animations ) {
         blockTimes[time].animations.push(...block.animations);
       }
-
-      // console.log({blockTimesTime: blockTimes[time], blockTimes});
     }
-
-    console.log({blockTimes});
 
     return blockTimes;
   };
