@@ -118,7 +118,6 @@ function AnimationBlock(block = {}, config = {}) {
       }
 
       if ( block.animations ) {
-        console.log({time, animations: block.animations});
         blockTimes[time].animations.push(...block.animations);
       }
     }
