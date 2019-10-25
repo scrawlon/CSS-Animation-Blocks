@@ -24,8 +24,8 @@ function AnimationBlock(block = {}, config = {}) {
       elementSelector: defaultElementSelector = false,
       groupOffset: defaultGroupOffset = false,
     } = defaults;
-    let blockTimes = {};
     const outerLoopEndBlockTime = outerLoopEndTime ? getBlockTime(outerLoopEndTime) : 0;
+    let blockTimes = {};
 
     if ( globalOffsetTime === 0 && outerLoopEndTime ) {
       if ( !blockTimes[outerLoopEndBlockTime] ) blockTimes[outerLoopEndBlockTime] = {};
@@ -104,11 +104,7 @@ function AnimationBlock(block = {}, config = {}) {
           currentEndLoopTime = startTime + parseInt(loopDuration);
         }
 
-        if ( !loopDuration ) {
-          insertBlockTimes(block, time);
-        }
-
-        if ( time <= currentEndLoopTime ) insertBlockTimes(block, time);
+        if ( !loopDuration || time <= currentEndLoopTime ) insertBlockTimes(block, time);
       }
     }
 
@@ -122,6 +118,7 @@ function AnimationBlock(block = {}, config = {}) {
       }
 
       if ( block.animations ) {
+        console.log({time, animations: block.animations});
         blockTimes[time].animations.push(...block.animations);
       }
     }
