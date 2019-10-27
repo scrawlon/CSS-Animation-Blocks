@@ -6,9 +6,14 @@ _A JavaScript library for managing and applying CSS animations with the followin
 2. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
-coming soon
+Coming soon.
+
+## API
+Coming soon.
 
 ## Basic Tutorial
+
+This short tutorial should provide a basic understanding of CSS Animation Blocks by building a simple animation.
 
 ### HTML
 Here's an html page with a _".container div"_, _".box div"_ and an _"h1"_ .
@@ -35,7 +40,7 @@ Here's an html page with a _".container div"_, _".box div"_ and an _"h1"_ .
 </html>
 ```
 
-There are also _"style.css"_ and _"index.js"_ files. That's where we'll place our code for to animate the _"box"_ element.
+There are also _"style.css"_ and _"index.js"_ files. That's where we'll place code to animate the _"box"_ element.
 
 ### CSS
 In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
@@ -114,7 +119,7 @@ const mainBlock = new AnimationBlock({
         elementSelector: '.box',
         cssAnimation: [
           'fade-in 1s ease normal forwards',
-          'background-colors 1s steps(1) normal forwards',
+          'background-red 1s steps(1) normal forwards',
         ],
         cssTransform: {
           translateY: 'move-down 2s ease normal forwards',
@@ -127,12 +132,12 @@ const mainBlock = new AnimationBlock({
 mainBlock.start();
 ```
 
-At time _"00:00.000"_ we have an _animations_ array containing an animation objects. Each animation object:
+At time _"00:00.000"_ we have an _animations_ array containing animation objects. Each animation object:
 * Must have one _"elementSelector"_. The _"elementSelector"_ above targets _".box"_ (all elements with the class "box").
 * Can (optionally) have one _"cssAnimation"_ array containing CSS animation shorthand strings.
 * Can (optionally) have one _"cssTransform"_ object. Object keys should match the transform type, and the values are CSS animation shorthand strings.
 
-The animation block above applies three animations, _"fade-in"_, _"background-colors"_ and _"move-down"_. Load the page in a browser and you should see the box fade in, move down and turn red.
+The animation block above applies three animations, _"fade-in"_, _"background-red"_ and _"move-down"_. Load the page in a browser and you should see the box fade in, move down and turn red.
 
 > _NOTE: Animations are written in standard CSS animation shorthand. For more info, [visit the MDN web docs](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)_
 
@@ -182,20 +187,21 @@ const titleBlock = new AnimationBlock({
       {
         elementSelector: 'h1',
         cssAnimation: [
-          'fade-in 1s ease normal forwards',
+          'fade-in 1s steps(1) normal forwards',
         ],
         cssTransform: {
-          scale: 'scale-down 1s ease normal forwards',
+          scale: 'scale-down 0s ease normal forwards',
         },
       }
     ]
   },
-  '00:05.500': {
+  '00:02.500': {
     animations: [
       {
         elementSelector: 'h1',
         cssTransform: {
           scale: 'scale-down 3s linear reverse forwards',
+          rotate: 'rotate 2s ease normal forwards 1',
         },
       }
     ]
@@ -218,20 +224,17 @@ const boxBlock = new AnimationBlock({
       },
     ]
   },
-  '00:05.500': {
+  '00:03.000': {
     animations: [
       {
         elementSelector: '.box',
-        cssAnimation: [
-          'background-red 1.5s steps(1) normal forwards',
-        ],
         cssTransform: {
           rotate: 'rotate 2s ease normal forwards 1',
         },
       }
     ]
   },
-  '00:06.500': {
+  '00:05.000': {
     animations: [
       {
         elementSelector: '.box',
@@ -307,17 +310,17 @@ For example, you can see the config object here:
 
 ```JavaScript
 const mainBlock = new AnimationBlock({
-  '00:01.000': {
-    animations: []
+  '00:00.000': {
+    blocks: [boxBlock]
   }
 },{
   defaults: {},
-  loop: true
+  loop: {}
 });
 ```
 
 ### Defaults
-When an entire Animation Block targets a single _"elementSelector"_, it can be tedious to enter the same _"elementSelector"_ and _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
+When an entire Animation Block targets a single _"elementSelector"_ and/or _"groupOffset"_, it can be tedious to enter the same _"elementSelector"_ and/or _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
 
 Any settings you add to the _"defaults"_ config will apply to all objects in the _"animations"_ array that do not already have those settings applied.
 
@@ -345,19 +348,16 @@ const boxBlock = new AnimationBlock({
       },
     ]
   },
-  '00:05.500': {
+  '00:03.000': {
     animations: [
       {
-        cssAnimation: [
-          'background-red 1.5s steps(1) normal forwards',
-        ],
         cssTransform: {
           rotate: 'rotate 2s ease normal forwards 1',
         },
       }
     ]
   },
-  '00:06.500': {
+  '00:05.000': {
     animations: [
       {
         cssAnimation: [
@@ -377,9 +377,7 @@ As you can see, all _"elementSelector"_ keys were removed from individual _"anim
 
 #### Default Group Offset
 
-When an entire Animation Block applies to an _"elementSelector"_ targeting multiple elements, and the same _"groupOffset"_ should apply to all animations, it can be tedious to add the same setting over-and-over, especially if you need to change that setting later. This situation can be handled with a Default Group Offset.
-
-Here's the _"boxBlock"_ Animation Block with a Default Group Offset config setting added.
+You can also set a default _"groupOffset"_ that will apply to all animations in the current Animation Block. Here's the _"boxBlock"_ Animation Block with a Default Group Offset config setting added.
 
 ```JavaScript
 const boxBlock = new AnimationBlock({
@@ -397,19 +395,16 @@ const boxBlock = new AnimationBlock({
       },
     ]
   },
-  '00:05.500': {
+  '00:03.000': {
     animations: [
       {
-        cssAnimation: [
-          'background-red 1.5s steps(1) normal forwards',
-        ],
         cssTransform: {
           rotate: 'rotate 2s ease normal forwards 1',
         },
       }
     ]
   },
-  '00:06.500': {
+  '00:05.000': {
     animations: [
       {
         cssAnimation: [
@@ -428,4 +423,82 @@ const boxBlock = new AnimationBlock({
 });
 ```
 
-### Loop
+#### Loop
+
+Another config setting is _"Loop"_. You can use this to run an Animation Block more than once. The possible settings are _"count"_, _"infinite"_, and _"endTime"_.
+
+The settings _"count"_ and _"infinite"_ are both ways to set the number of times an animation will play." A loop _"count"_ of "2" means the animation will play twice, or setting _"infinite"_ to "true" means the animation will play continuously. You only need one of these settings, either _"count"_ or _"infinite"_.
+
+The _"endTime"_ setting is the time the current animation loop ends and the next loop can begin. The _"endTime"_ can be higher than the highest time in the Animation Block, adding a gap/pause at the end of the loop. The _"endTime"_ can also be lower than the highest time in an Animation Block, causing only part of the animation to play.
+
+Here we add the _"loop"_ config to the "mainBlock" Animation Block. The animation will play twice and each loop will run for 7.5 seconds.
+
+```JavaScript
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [boxBlock]
+  }
+},{
+  loop: {
+    count: 2,
+    endTime: '00:07.500',
+  },
+});
+```
+
+Here's the same animation with _"loop.infinite"_. This animation will run continuously.
+
+```JavaScript
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [boxBlock]
+  }
+},{
+  loop: {
+    infinte: true,
+    endTime: '00:07.500',
+  },
+});
+```
+
+Nested blocks can be looped independently from the main block. The only limitation, is that the number of loops in nested blocks can't exceed the time length of the main block. So, if you created an infinite loop in a nested block, it would only run until is hit the _"endTime"_ of the main block. In the example above, that would be 7.5 seconds.
+
+To illustrate, let's set a short, infinite loop on our "titleBock". As you'll see, the animation will only run until it hits the end of the main block.
+
+```JavaScript
+const titleBlock = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s steps(1) normal forwards',
+        ],
+        cssTransform: {
+          scale: 'scale-down 0s ease normal forwards',
+        },
+      }
+    ]
+  },
+  '00:02.500': {
+    animations: [
+      {
+        cssTransform: {
+          scale: 'scale-down 3s linear reverse forwards',
+          rotate: 'rotate 2s ease normal forwards 1',
+        },
+      }
+    ]
+  },
+},{
+  loop: {
+    endTime: '00:02.000',
+    infinite: true
+  },
+  defaults: {
+    elementSelector: 'h1',
+    groupOffset: {
+      delayTime: 300
+    }
+  }
+});
+```
