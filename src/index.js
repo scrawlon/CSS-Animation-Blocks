@@ -73,7 +73,6 @@ function AnimationBlock(block = {}, config = {}) {
           let resetDomElementsForNextLoop = maxLoopCount ? true : false;
 
           if ( importedBlockTimes ) {
-            console.log({importedBlockTimes});
             insertImportedAnimations(importedBlockTimes, loopDuration, resetDomElementsForNextLoop);
 
             /* repeat blocks that are looped */
@@ -147,12 +146,9 @@ function AnimationBlock(block = {}, config = {}) {
       }
 
       if ( resetDomElementsForNextLoop ) {
-        console.log({time, resetDomElementsForNextLoop});
         blockTimes[time].resetDomElementsForNextLoop = resetDomElementsForNextLoop;
       }
     }
-
-    console.log({blockTimes});
 
     return blockTimes;
   };
@@ -202,12 +198,6 @@ AnimationBlock.prototype.start = function() {
   let restartLoop = false;
   let loopCount = count;
 
-  console.log({loopCount, loopInfinite});
-
-  console.log({block});
-  // console.log({defaultElementSelector});
-  // console.log({defaultGroupOffset});
-
   requestAnimationFrame(animation);
 
   function animation(timestamp) {
@@ -215,8 +205,6 @@ AnimationBlock.prototype.start = function() {
 
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
       const { animations = [], loopEnd = false, resetDomElementsForNextLoop } = block[animationTimes[nextAnimationIndex]];
-
-      console.log({resetDomElementsForNextLoop});
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
@@ -265,11 +253,8 @@ AnimationBlock.prototype.start = function() {
           if ( dom[element] ) domElements[element] = dom[element];
         });
 
-        console.log({domElements});
         resetDomElements(domElements);
       }
-
-      console.log({loopEnd, time: animationTimes[nextAnimationIndex]});
 
       if ( loopEnd && (loopCount || loopInfinite) ) restartLoop = true;
 
@@ -279,12 +264,9 @@ AnimationBlock.prototype.start = function() {
     if ( !restartLoop && nextAnimationIndex <= lastAnimationIndex ) {
       requestAnimationFrame(animation);
     } else if ( restartLoop && loop ) {
-      console.log({loop});
-
       loopCount--;
 
       if ( loopInfinite || loopCount > 0 ) {
-        console.log({dom});
         startTime = timestamp;
         nextAnimationIndex = 0;
         resetDomElements(dom);
