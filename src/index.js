@@ -70,9 +70,11 @@ function AnimationBlock(block = {}, config = {}) {
           let loopDuration = importedConfigLoopEndTime ? importedConfigLoopEndTime - blockTime : 0;
           const realLoopCount = loopInfinite ? 99 : count;
           const maxLoopCount = getMaxLoopCount(realLoopCount, loopDuration, importedConfigLoopEndTime, outerLoopEndBlockTime);
+          let resetDomElementsForNextLoop = maxLoopCount ? true : false;
 
           if ( importedBlockTimes ) {
-            insertImportedAnimations(importedBlockTimes, loopDuration);
+            console.log({importedBlockTimes});
+            insertImportedAnimations(importedBlockTimes, loopDuration, resetDomElementsForNextLoop);
 
             /* repeat blocks that are looped */
             if ( configLoopEndTime && maxLoopCount > 1 ) {
@@ -80,8 +82,10 @@ function AnimationBlock(block = {}, config = {}) {
                 const importedBlockLoopInsertTime = importedConfigLoopEndTime + (loopDuration * loopCount);
                 const importedBlockInsertTimes = importedBlock.init(importedBlockLoopInsertTime, outerLoopEndTime);
 
+                if ( loopCount === maxLoopCount - 1 ) resetDomElementsForNextLoop = false;
+
                 if ( importedBlockInsertTimes && loopDuration ) {
-                  insertImportedAnimations(importedBlockInsertTimes, loopDuration);
+                  insertImportedAnimations(importedBlockInsertTimes, loopDuration, resetDomElementsForNextLoop);
                 }
               });
             }
@@ -92,11 +96,14 @@ function AnimationBlock(block = {}, config = {}) {
       }
     }
 
-    function insertImportedAnimations(importedBlockTimes, loopDuration) {
+    function insertImportedAnimations(importedBlockTimes, loopDuration, resetDomElementsForNextLoop = false) {
       let startTime = 0;
       let currentEndLoopTime = 0;
+      let lastTime = 0;
+      let domElementSelectors = new Set();
 
       for ( let [time, block] of Object.entries(importedBlockTimes) ) {
+        const { animations } = block;
         time = parseInt(time);
 
         if ( !startTime ) {
@@ -104,11 +111,25 @@ function AnimationBlock(block = {}, config = {}) {
           currentEndLoopTime = startTime + parseInt(loopDuration);
         }
 
-        if ( !loopDuration || time <= currentEndLoopTime ) insertBlockTimes(block, time);
+        if ( !loopDuration || time <= currentEndLoopTime ) {
+          lastTime = time;
+          insertBlockTimes(block, time);
+
+          if ( animations ) {
+            animations.forEach((animation) => {
+              const { elementSelector } = animation;
+              if ( elementSelector ) domElementSelectors.add(elementSelector);
+            });
+          }
+        };
+      }
+
+      if ( loopDuration && currentEndLoopTime && resetDomElementsForNextLoop ) {
+        insertBlockTimes({}, currentEndLoopTime, domElementSelectors);
       }
     }
 
-    function insertBlockTimes(block, time) {
+    function insertBlockTimes(block, time, resetDomElementsForNextLoop = false) {
       if ( !blockTimes[time] ) {
         blockTimes[time] = {};
       }
@@ -120,7 +141,18 @@ function AnimationBlock(block = {}, config = {}) {
       if ( block.animations ) {
         blockTimes[time].animations.push(...block.animations);
       }
+
+      if ( block.resetDomElementsForNextLoop ) {
+          blockTimes[time].resetDomElementsForNextLoop = block.resetDomElementsForNextLoop;
+      }
+
+      if ( resetDomElementsForNextLoop ) {
+        console.log({time, resetDomElementsForNextLoop});
+        blockTimes[time].resetDomElementsForNextLoop = resetDomElementsForNextLoop;
+      }
     }
+
+    console.log({blockTimes});
 
     return blockTimes;
   };
@@ -239,6 +271,7 @@ AnimationBlock.prototype.start = function() {
       loopCount--;
 
       if ( loopInfinite || loopCount > 0 ) {
+        console.log({dom});
         startTime = timestamp;
         nextAnimationIndex = 0;
         resetDomElements(dom);
