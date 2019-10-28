@@ -214,7 +214,9 @@ AnimationBlock.prototype.start = function() {
     if (!startTime) startTime = timestamp;
 
     if ( timestamp - startTime >= animationTimes[nextAnimationIndex] ) {
-      const { animations = [], loopEnd = false } = block[animationTimes[nextAnimationIndex]];
+      const { animations = [], loopEnd = false, resetDomElementsForNextLoop } = block[animationTimes[nextAnimationIndex]];
+
+      console.log({resetDomElementsForNextLoop});
 
       animations.forEach((animation, index) => {
         const { elementSelector, cssAnimation, cssTransform, groupOffset } = animation;
@@ -255,6 +257,17 @@ AnimationBlock.prototype.start = function() {
 
         });
       });
+
+      if ( resetDomElementsForNextLoop ) {
+        let domElements = {};
+
+        resetDomElementsForNextLoop.forEach((element) => {
+          if ( dom[element] ) domElements[element] = dom[element];
+        });
+
+        console.log({domElements});
+        resetDomElements(domElements);
+      }
 
       console.log({loopEnd, time: animationTimes[nextAnimationIndex]});
 
