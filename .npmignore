@@ -1,4 +1,4 @@
 .DS_Store
-test-samples/
-lib/
 node_modules/
+src/
+test-samples/
