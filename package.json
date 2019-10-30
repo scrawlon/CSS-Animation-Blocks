@@ -2,7 +2,7 @@
   "name": "css-animation-blocks",
   "version": "0.0.1",
   "description": "A JavaScript library for managing and applying CSS animations",
-  "main": "./lib/index.js",
+  "main": "./lib/css-animation-blocks.js",
   "scripts": {
     "build": "rollup -c",
     "prepublish": "rm -rf ./lib && npm run build",
