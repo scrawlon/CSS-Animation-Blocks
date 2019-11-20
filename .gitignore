@@ -2,3 +2,4 @@
 test-samples/
 lib/
 node_modules/
+*.tgz

@@ -27,6 +27,10 @@ function addAnimationEventListeners(element) {
     const endStyles = getComputedStyle(element);
     const remainingAnimations = getRemainingAnimations(element, animationName);
 
+    if ( !cssKeyframeProps[animationName] ) {
+      cssKeyframeProps[animationName] = getKeyframeProps(styleSheets, animationName);
+    }
+
     /* Hold animated CSS property values after animation is removed from element */
     cssKeyframeProps[animationName].forEach((style) => {
       element.style[style] = endStyles.getPropertyValue(style);
