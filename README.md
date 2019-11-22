@@ -3,7 +3,9 @@ _A JavaScript library for managing and applying CSS animations with the followin
 
 1. **Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format. Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
 
-2. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
+2. **Additive Animations:** Multiple CSS Animations can be added to Dom elements in sequence, and will not cancel out running animations, as long as the added animations don't target the same attributes.
+
+3. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
 Coming soon.
@@ -34,7 +36,7 @@ Each timecode key holds an object with an **'animations'** array. This is where 
 * **'elementSelector'** is a string value for any valid Dom selector that works with `document.querySelectorAll`.
 
 > Use standard CSS animation shorthand syntax.
-> [(See the Mozilla docs for detailed info on CSS Animation shorthand)](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+> [See the Mozilla docs for detailed info on CSS Animation shorthand](https://developer.mozilla.org/en-US/docs/Web/CSS/animation), and also [for more info about the CSS transform property](https://developer.mozilla.org/en-US/docs/Web/CSS/transform).
 
 ```JavaScript
 const mainBlock = new AnimationBlock({
@@ -52,14 +54,14 @@ const mainBlock = new AnimationBlock({
     ]
   }
 }, {
-  Defaults: {},
-  Loop: {}
+  defaults: {},
+  loop: {}
 });
 
 mainBlock.start();
 ```
 
-The above would add the CSS animation 'fade-in 1s ease normal forwards' and CSS transform animation 'rotate 2s ease normal forwards 1' to all 'h1' elements.  
+The above would add the **'cssAnimation'** 'fade-in 1s ease normal forwards' and **'cssTransform'** animation 'rotate 2s ease normal forwards 1' to all 'h1' elements.  
 
 In order for this to work, you must define CSS keyframes 'fade-in' and 'rotate' in an external CSS stylesheet included in you html page. That CSS might look like this:
 
@@ -89,7 +91,7 @@ When applying animations to multiple objects, it's possible to add a delay betwe
 
   * **'delayTime'** is the number of milliseconds to
   wait between applying animations to the each of the chosen elementSelectors.
-  * **'delayRange'** is an array containing two 'delayTime' numbers representing the randomly selected min/max time to delay between applying animations to the each of the chosen elementSelectors.
+  * **'delayRange'** is an array containing two 'delayTime' numbers representing the min/max time to delay between applying animations to the each of the chosen elementSelectors. At runtime, a number will be randomly selected using the 'delayRange' values as the min/max to choose from.
 
 ```JavaScript
 const mainBlock = new AnimationBlock({
@@ -110,8 +112,8 @@ const mainBlock = new AnimationBlock({
     ]
   }
 }, {
-  Defaults: {},
-  Loop: {}
+  defaults: {},
+  loop: {}
 });
 
 mainBlock.start();
@@ -160,7 +162,7 @@ mainBlock.start();
 The optional config object can be used to apply settings to an entire AnimationBlock.
 
 #### Defaults object
-To apply default **'elementSelector'** and **'groupOffset'** settings to an entire AnimationBlock, use the defaults object. When a default value is set, that value applies to all animations in the AnimationBlock that don't already define those values.
+To apply default **'elementSelector'** and **'groupOffset'** settings to an entire AnimationBlock, use the defaults object. When a default value is set, that value applies to all animations in the AnimationBlock, unless that value is already defined.
 
 ```JavaScript
 const h1Block = new AnimationBlock({
@@ -212,7 +214,7 @@ The above **'defaults'** settings applies all animations to the 'h1' **'elementS
 
 Use the **'loop'** object to make an AnimationBlock play multiple times.
 
-* **'count'** is a number representing the how many times to repeat the AnimationBlock.
+* **'count'** is a number representing how many times to repeat the AnimationBlock.
 * **'infinite'** is a boolean (true/false). If set to true, the AnimationBlock will repeat continuously.
 * **'endTime'** this is a timecode string (00:00.000) indicating when to end the current loop and start the next loop.
 
@@ -528,7 +530,7 @@ So far, we've looked at animations on single elements, one _".box"_ and one _"h1
 
 Now, if you reload the page, you should see three boxes all animating at the same time. This is fine, but what if you wanted to run the same animation on those elements, but delay the start of each element to create a "stepped" animation?
 
-Each element in an _"animations"_ array can include a _"groupOffset"_ object with a _"delayTime"_ key, containing a time in milliseconds. If the animation applies to multiple elements, each element will be delayed by the _"groupOffset.delayTime"_ amount. Let's update the first animation in the _"boxBlock"_ and add a _"groupOffset"_:
+Each element in an _"animations"_ array can include a _"groupOffset"_ object with a _"delayTime"_ key with value in milliseconds. If the animation applies to multiple elements, each element will be delayed by the _"groupOffset.delayTime"_ amount. Let's update the first animation in the _"boxBlock"_ and add a _"groupOffset"_:
 
 ```JavaScript
 '00:00.000': {
@@ -551,7 +553,7 @@ Each element in an _"animations"_ array can include a _"groupOffset"_ object wit
 },
 ```
 
-Now reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
+Reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
 
 What if you want all animations in a block to have the same groupOffset? It's possible to set a default offset for an entire block in the configuration settings.
 
