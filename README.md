@@ -1,22 +1,17 @@
 # CSS Animation Blocks
 _A JavaScript library for managing and applying CSS animations with the following features:_
 
-1. **Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format.
-Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
+1. **Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format. Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
 
-2. **Multiple Transform Animations:** To allow multiple sequential transform animations,
-CSS Animation Blocks creates nested wrapper elements around your elements.
-Each transform animation is applied to its own wrapper element.
-Without wrapper elements, transforms would cancel each other out.
+2. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
 Coming soon.
 
-## API
+## Documentation
 
 ### Instantiate
-To create a new AnimationBlock, call `new AnimationsBlock()`
-with a block definition object and an optional configuration object.
+To create a new AnimationBlock, call `new AnimationBlock()` with a block definition object and an optional configuration object.
 
 ```JavaScript
 const mainBlock = new AnimationBlock({
@@ -30,16 +25,12 @@ mainBlock.start();
 ```
 
 ### AnimationBlock definition objects
-Within a block definition object, the main object keys are timecode strings,
-in the format 'minutes:seconds.milliseconds (00:00.000)'. This represents the
-moment in time your defined animations will start.
+Within a block definition object, the main object keys are timecode strings, in the format 'minutes:seconds.milliseconds (00:00.000)'. This represents the moment in time your defined animations will start.
 
-Each timecode key holds an object with an **'animations'** array. This is where
-you'll call your **'cssAnimation'** and **'cssTransform'** keyframes on a Dom **'elementSelector'** in an html page.
+Each timecode key holds an object with an **'animations'** array. This is where you'll call your **'cssAnimation'** and **'cssTransform'** keyframes on a Dom **'elementSelector'** in an html page.
 
 * **'cssAnimation'** is an array of CSS Animations.
-* **'cssTransform'** is an object. The keys are the CSS Transform type,
-and the values are CSS Animations.
+* **'cssTransform'** is an object. The keys are the CSS Transform type, and the values are CSS Animations.
 * **'elementSelector'** is a string value for any valid Dom selector that works with `document.querySelectorAll`.
 
 > Use standard CSS animation shorthand syntax.
@@ -94,15 +85,11 @@ In order for this to work, you must define CSS keyframes 'fade-in' and 'rotate' 
 
 #### groupOffset
 
-When applying animations to multiple objects, it's possible to add a delay
-between each one.
+When applying animations to multiple objects, it's possible to add a delay between each one. **'groupOffset'** is an object that contains a **'delayTime'** or **'delayRange'** element.
 
-* **'groupOffset'** is an object that contain a **'delayTime'** or **'delayRange'** element.
   * **'delayTime'** is the number of milliseconds to
   wait between applying animations to the each of the chosen elementSelectors.
-  * **'delayRange'** is an array containing two 'delayTime' numbers
-  representing the randomly selected min/max time to delay between applying
-  animations to the each of the chosen elementSelectors.
+  * **'delayRange'** is an array containing two 'delayTime' numbers representing the randomly selected min/max time to delay between applying animations to the each of the chosen elementSelectors.
 
 ```JavaScript
 const mainBlock = new AnimationBlock({
@@ -130,17 +117,12 @@ const mainBlock = new AnimationBlock({
 mainBlock.start();
 ```
 
-The above adds a **'groupOffset'** of 300 milliseconds, so each 'h1' element's
-animation will start with a 300 millisecond delay.
+The above adds a **'groupOffset'** of 300 milliseconds, so each 'h1' element's animation will start with a 300 millisecond delay.
 
 #### Nested AnimationBlocks
-Another element you can add to timecode objects is a **'blocks'** array.
-A complex animation can be split into smaller blocks combined into another
-AnimationBlock.
+Another element you can add to timecode objects is a **'blocks'** array. Animations can be split into smaller blocks combined into another AnimationBlock.
 
-In the previous example, there's a mainBlock with animations applied to an
-'h1' elementSelector. Let's move that animation into its own 'h1Block' and
-include that in the mainBlock's **'blocks'** array.
+In the previous example, there's a mainBlock with animations applied to an 'h1' elementSelector. Let's move that animation into its own 'h1Block' and include that in the mainBlock's **'blocks'** array.
 
 ```JavaScript
 const h1Block = new AnimationBlock({
@@ -175,14 +157,10 @@ mainBlock.start();
 ```
 
 ### AnimationBlock config object
-The optional config object can be used to apply settings to an entire
-AnimationBlock.
+The optional config object can be used to apply settings to an entire AnimationBlock.
 
 #### Defaults object
-To apply default **'elementSelector'** and **'groupOffset'** settings to
-an entire AnimationBlock, use the defaults object. When a default value is
-set, that value applies to all animations in the AnimationBlock that don't
-already define those values.
+To apply default **'elementSelector'** and **'groupOffset'** settings to an entire AnimationBlock, use the defaults object. When a default value is set, that value applies to all animations in the AnimationBlock that don't already define those values.
 
 ```JavaScript
 const h1Block = new AnimationBlock({
@@ -228,20 +206,15 @@ const mainBlock = new AnimationBlock({
 mainBlock.start();
 ```
 
-The above **'defaults'** settings applies all animations to the 'h1'
-**'elementSelector'**, and sets a 300 millisecond delay before applying the
-animation to each 'h1' element on the page.
+The above **'defaults'** settings applies all animations to the 'h1' **'elementSelector'**, and sets a 300 millisecond **'groupOffset'** **'delayTime'** before applying the animation to each 'h1' element on the page.
 
 #### Loop object
 
 Use the **'loop'** object to make an AnimationBlock play multiple times.
 
-* **'count'** is a number representing the number of times to repeat the
-AnimationBlock.
-* **'infinite'** is a boolean (true/false). If set to true, the AnimationBlock
-will repeat continuously.
-* **'endTime'** this is a timecode string (00:00.000) indicating when to end
-the current loop and start the next loop.
+* **'count'** is a number representing the how many times to repeat the AnimationBlock.
+* **'infinite'** is a boolean (true/false). If set to true, the AnimationBlock will repeat continuously.
+* **'endTime'** this is a timecode string (00:00.000) indicating when to end the current loop and start the next loop.
 
 ```JavaScript
 const h1Block = new AnimationBlock({
@@ -320,7 +293,7 @@ Here's an html page with a _".container div"_, _".box div"_ and an _"h1"_ .
 </html>
 ```
 
-There are also _"style.css"_ and _"index.js"_ files. That's where we'll place code to animate the _"box"_ element.
+It also includes two external files, _"style.css"_ and _"index.js"_. That's where we'll place code to animate the _"box"_ element.
 
 ### CSS
 In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
