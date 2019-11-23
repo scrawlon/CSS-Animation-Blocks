@@ -3,13 +3,280 @@ _A JavaScript library for managing and applying CSS animations with the followin
 
 1. **Animation Blocks:** Uses JavaScript objects to manage animation blocks in timeline format. Blocks can be nested, allowing complex animations by combining small, easily-maintained blocks.
 
-2. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
+2. **Additive Animations:** Multiple CSS Animations can be added to Dom elements in sequence, and will not cancel out running animations, as long as the added animations don't target the same attributes.
+
+3. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
 Coming soon.
 
-## API
-Coming soon.
+## Documentation
+
+### Instantiate
+To create an AnimationBlock, require 'css-animation-blocks' and call `new AnimationBlock()` with a block timeline object and an optional configuration object.
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {}
+}, {
+  Defaults: {},
+  Loop: {}
+});
+
+mainBlock.start();
+```
+
+### AnimationBlock timeline objects
+Within a block timeline object, the main object keys are timecode strings, in the format 'minutes:seconds.milliseconds (00:00.000)'. This represents the moment in time your defined animations will start.
+
+Each timecode key holds an object with an **'animations'** array. This is where you'll call your **'cssAnimation'** and **'cssTransform'** keyframes on a Dom **'elementSelector'** in an html page.
+
+* **'cssAnimation'** is an array of CSS Animations.
+* **'cssTransform'** is an object. The keys are the CSS Transform type, and the values are CSS Animations.
+* **'elementSelector'** is a string value for any valid Dom selector that works with `document.querySelectorAll`.
+
+> Use standard CSS animation shorthand syntax.
+> [See the Mozilla docs for detailed info on CSS Animation shorthand](https://developer.mozilla.org/en-US/docs/Web/CSS/animation), and also [for more info about the CSS transform property](https://developer.mozilla.org/en-US/docs/Web/CSS/transform).
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards'
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards',
+        },
+        elementSelector: 'h1'
+      }
+    ]
+  }
+}, {
+  defaults: {},
+  loop: {}
+});
+
+mainBlock.start();
+```
+
+The above would add the **'cssAnimation'** 'fade-in 1s ease normal forwards' and **'cssTransform'** animation 'rotate 2s ease normal forwards 1' to all 'h1' elements.  
+
+In order for this to work, you must define CSS keyframes 'fade-in' and 'rotate' in an external CSS stylesheet included in you html page. That CSS might look like this:
+
+```css
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+
+#### groupOffset
+
+When applying animations to multiple objects, it's possible to add a delay between each one. **'groupOffset'** is an object that contains a **'delayTime'** or **'delayRange'** element.
+
+  * **'delayTime'** is the number of milliseconds to
+  wait between applying animations to the each of the chosen elementSelectors.
+  * **'delayRange'** is an array containing two 'delayTime' numbers representing the min/max time to delay between applying animations to the each of the chosen elementSelectors. At runtime, a number will be randomly selected using the 'delayRange' values as the min/max to choose from.
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards'
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards',
+        },
+        elementSelector: 'h1',
+        groupOffset: {
+          delayTime: 300
+        }
+      }
+    ]
+  }
+}, {
+  defaults: {},
+  loop: {}
+});
+
+mainBlock.start();
+```
+
+The above adds a **'groupOffset'** of 300 milliseconds, so each 'h1' element's animation will start with a 300 millisecond delay.
+
+#### Nested AnimationBlocks
+Another element you can add to timecode objects is a **'blocks'** array. Animations can be split into smaller blocks combined into another AnimationBlock.
+
+In the previous example, there's a mainBlock with animations applied to an 'h1' elementSelector. Let's move that animation into its own 'h1Block' and include that in the mainBlock's **'blocks'** array.
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const h1Block = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards'
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards',
+        },
+        elementSelector: 'h1',
+        groupOffset: {
+          delayTime: 300
+        }
+      }
+    ]
+  }
+});
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [h1Block]
+  }
+}, {
+  defaults: {},
+  loop: {}
+});
+
+mainBlock.start();
+```
+
+### AnimationBlock config object
+The optional config object can be used to apply settings to an entire AnimationBlock.
+
+#### Defaults object
+To apply default **'elementSelector'** and **'groupOffset'** settings to an entire AnimationBlock, use the defaults object. When a default value is set, that value applies to all animations in the AnimationBlock, unless that value is already defined.
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const h1Block = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards'
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards',
+        },
+      }
+    ]
+  },
+  '00:03.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease reverse forwards'
+        ],
+      }
+    ]
+  }
+}, {
+  defaults: {
+    elementSelector: 'h1',
+    groupOffset: {
+      delayTime: 300
+    }
+  }
+});
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [h1Block]
+  }
+}, {
+  defaults: {},
+  loop: {}
+});
+
+mainBlock.start();
+```
+
+The above **'defaults'** settings applies all animations to the 'h1' **'elementSelector'**, and sets a 300 millisecond **'groupOffset'** **'delayTime'** before applying the animation to each 'h1' element on the page.
+
+#### Loop object
+
+Use the **'loop'** object to make an AnimationBlock play multiple times.
+
+* **'count'** is a number representing how many times to repeat the AnimationBlock.
+* **'infinite'** is a boolean (true/false). If set to true, the AnimationBlock will repeat continuously.
+* **'endTime'** this is a timecode string (00:00.000) indicating when to end the current loop and start the next loop.
+
+```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
+const h1Block = new AnimationBlock({
+  '00:00.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease normal forwards'
+        ],
+        cssTransform: {
+          rotate: 'rotate 2s ease normal forwards',
+        },
+      }
+    ]
+  },
+  '00:03.000': {
+    animations: [
+      {
+        cssAnimation: [
+          'fade-in 1s ease reverse forwards'
+        ],
+      }
+    ]
+  }
+}, {
+  defaults: {
+    elementSelector: 'h1',
+    groupOffset: {
+      delayTime: 300
+    }
+  },
+  loop: {
+    count: 2,
+    endTime: '00:05.000'
+  }
+});
+
+const mainBlock = new AnimationBlock({
+  '00:00.000': {
+    blocks: [h1Block]
+  }
+}, {
+  defaults: {},
+  loop: {}
+});
+
+mainBlock.start();
+```
 
 ## Basic Tutorial
 
@@ -40,7 +307,7 @@ Here's an html page with a _".container div"_, _".box div"_ and an _"h1"_ .
 </html>
 ```
 
-There are also _"style.css"_ and _"index.js"_ files. That's where we'll place code to animate the _"box"_ element.
+It also includes two external files, _"style.css"_ and _"index.js"_. That's where we'll place code to animate the _"box"_ element.
 
 ### CSS
 In the _"style.css"_ file, add styles to set the _"box"_ element's initial state, and create animation keyframes that can be applied with Animation Blocks.
@@ -110,7 +377,7 @@ Opening the html file in a browser now would show an empty page, because our ele
 In the _"index.js"_ file, import the AnimationBlock library and create a new AnimationBlock:
 
 ```JavaScript
-import { AnimationBlock } from 'css-animation-blocks');
+const AnimationBlock = require('css-animation-blocks');
 
 const mainBlock = new AnimationBlock({
   '00:00.000': {
@@ -146,7 +413,7 @@ The animation block above applies three animations, _"fade-in"_, _"background-re
 One benefit of CSS Animation Blocks is that you can include blocks in other blocks. To illustrate let's extend the previous example by moving the _".box"_ animation into its own block, and include that block in the _"mainBlock"_.
 
 ```JavaScript
-import { AnimationBlock } from 'css-animation-blocks');
+const AnimationBlock = require('css-animation-blocks');
 
 const boxBlock = new AnimationBlock({
   '00:00.000': {
@@ -179,7 +446,7 @@ We created a new Animation Block named _"boxBlock"_. To nest that block in our _
 Nested blocks can also contain other nested blocks. Here, we'll add a new block to animate the _"h1"_ element in our _".box"_ element, and we'll nest the new block in the _"boxBlock"_.
 
 ```JavaScript
-import { AnimationBlock } from 'css-animation-blocks');
+const AnimationBlock = require('css-animation-blocks');
 
 const titleBlock = new AnimationBlock({
   '00:00.000': {
@@ -275,7 +542,7 @@ So far, we've looked at animations on single elements, one _".box"_ and one _"h1
 
 Now, if you reload the page, you should see three boxes all animating at the same time. This is fine, but what if you wanted to run the same animation on those elements, but delay the start of each element to create a "stepped" animation?
 
-Each element in an _"animations"_ array can include a _"groupOffset"_ object with a _"delayTime"_ key, containing a time in milliseconds. If the animation applies to multiple elements, each element will be delayed by the _"groupOffset.delayTime"_ amount. Let's update the first animation in the _"boxBlock"_ and add a _"groupOffset"_:
+Each element in an _"animations"_ array can include a _"groupOffset"_ object with a _"delayTime"_ key with value a in milliseconds. If the animation applies to multiple elements, each element will be delayed by the _"groupOffset.delayTime"_ amount. Let's update the first animation in the _"boxBlock"_ and add a _"groupOffset"_:
 
 ```JavaScript
 '00:00.000': {
@@ -298,17 +565,19 @@ Each element in an _"animations"_ array can include a _"groupOffset"_ object wit
 },
 ```
 
-Now reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
+Reload the page, and each block should have a slight pause before fading in. You can add a different groupOffset for each object in an _"animations"_ array. Trying copy the _"groupOffset"_ from the _".box"_ element and adding it to the first animation in the _"titleBlock"_. That should make the _"h1"_ elements appear one-at-a-time, as each _".box"_ turns red.
 
 What if you want all animations in a block to have the same groupOffset? It's possible to set a default offset for an entire block in the configuration settings.
 
-## Configuration
+### Configuration
 
 Animation Blocks have a second optional parameter for setting configurations. The options are _"defaults"_  and _"loop"_.
 
 For example, you can see the config object here:
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const mainBlock = new AnimationBlock({
   '00:00.000': {
     blocks: [boxBlock]
@@ -319,7 +588,7 @@ const mainBlock = new AnimationBlock({
 });
 ```
 
-### Defaults
+#### Defaults
 When an entire Animation Block targets a single _"elementSelector"_ and/or _"groupOffset"_, it can be tedious to enter the same _"elementSelector"_ and/or _"groupOffset"_ in each time entry. That's where the _"defaults"_ config settings can help.
 
 Any settings you add to the _"defaults"_ config will apply to all objects in the _"animations"_ array that do not already have those settings applied.
@@ -330,6 +599,8 @@ The _"boxBlock"_ Animation Block we've been working applies animations to _".box
 Here's the same code as before, but using a Default Element Selector:
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const boxBlock = new AnimationBlock({
   '00:00.000': {
     blocks: [titleBlock],
@@ -380,6 +651,8 @@ As you can see, all _"elementSelector"_ keys were removed from individual _"anim
 You can also set a default _"groupOffset"_ that will apply to all animations in the current Animation Block. Here's the _"boxBlock"_ Animation Block with a Default Group Offset config setting added.
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const boxBlock = new AnimationBlock({
   '00:00.000': {
     blocks: [titleBlock],
@@ -434,6 +707,8 @@ The _"endTime"_ setting is the time the current animation loop ends and the next
 Here we add the _"loop"_ config to the "mainBlock" Animation Block. The animation will play twice and each loop will run for 7.5 seconds.
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const mainBlock = new AnimationBlock({
   '00:00.000': {
     blocks: [boxBlock]
@@ -449,6 +724,8 @@ const mainBlock = new AnimationBlock({
 Here's the same animation with _"loop.infinite"_. This animation will run continuously.
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const mainBlock = new AnimationBlock({
   '00:00.000': {
     blocks: [boxBlock]
@@ -466,6 +743,8 @@ Nested blocks can be looped independently from the main block. The only limitati
 To illustrate, let's set a short, infinite loop on our "titleBock". As you'll see, the animation will only run until it hits the end of the main block.
 
 ```JavaScript
+const AnimationBlock = require('css-animation-blocks');
+
 const titleBlock = new AnimationBlock({
   '00:00.000': {
     animations: [
