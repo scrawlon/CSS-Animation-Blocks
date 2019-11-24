@@ -11,7 +11,7 @@ export default [
         format: 'cjs',
       },
       {
-        file: './lib/css-animation-blocks-esm.js',
+        file: './lib/css-animation-blocks.esm.js',
         format: 'esm',
       }
     ],
