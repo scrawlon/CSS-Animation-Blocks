@@ -27,7 +27,7 @@ export default [
       {
         file: './lib/css-animation-blocks.min.js',
         format: 'iife',
-        name: 'cssAnimationBlocks'
+        name: 'AnimationBlock'
       }
     ],
     plugins: [

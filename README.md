@@ -8,10 +8,12 @@ _A JavaScript library for managing and applying CSS animations with the followin
 3. **Multiple Transform Animations:** To allow multiple sequential transform animations, CSS Animation Blocks creates nested wrapper elements around your elements. Each transform animation is applied to its own wrapper element. Without wrapper elements, transforms would cancel each other out.
 
 ## Installation
-There are three options for adding CSS Animation Blocks to your JS project:
+There are two npm options for adding CSS Animation Blocks to your JS project. First run `npm install css-animation-blocks`, then include in your project using 'require' or 'import'.
 * `const { AnimationBlock } = require 'css-animation-blocks';`
 * `import { AnimationBlock } from 'css-animation-blocks';`
-* CDN info coming soon.
+
+You can also include css-animation-blocks directly in the an head of an html page:
+* `<script src="https://unpkg.com/css-animation-block"></script>`
 
 ## Documentation
 
