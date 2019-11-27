@@ -1,6 +1,6 @@
 {
   "name": "css-animation-blocks",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A JavaScript library for managing and applying CSS animations",
   "main": "./lib/css-animation-blocks.js",
   "module": "./lib/css-animation-blocks.esm.js",

@@ -278,4 +278,4 @@ AnimationBlock.prototype.start = function() {
   }
 }
 
-export { AnimationBlock };
+export default AnimationBlock;

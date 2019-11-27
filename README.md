@@ -10,9 +10,9 @@ _A JavaScript library for managing and applying CSS animations with the followin
 ## Installation
 There are two npm options for adding CSS Animation Blocks to your JS project. First run `npm install css-animation-blocks`, then include in your project using 'require' or 'import'.
 * `const { AnimationBlock } = require 'css-animation-blocks';`
-* `import { AnimationBlock } from 'css-animation-blocks';`
+* `import AnimationBlock from 'css-animation-blocks';`
 
-You can also include css-animation-blocks directly in the an head of an html page:
+You can also include css-animation-blocks directly in the head of an html page:
 * `<script src="https://unpkg.com/css-animation-block"></script>`
 
 ## Documentation
@@ -75,6 +75,10 @@ The above would add the **'cssAnimation'** 'fade-in 1s ease normal forwards' and
 In order for this to work, you must define CSS keyframes 'fade-in' and 'rotate' in an external CSS stylesheet included in you html page. That CSS might look like this:
 
 ```css
+h1 {
+  opacity: 0;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -92,6 +96,24 @@ In order for this to work, you must define CSS keyframes 'fade-in' and 'rotate' 
     transform: rotate(360deg);
   }
 }
+```
+
+You'll also need an HTML page that includes a h1 element:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- include the CSS mentioned above -->
+    <link href="style.css" rel="stylesheet">
+    <script src="https://unpkg.com/css-animation-block"></script>
+    <script>
+      /* JavaScript goes here */
+    </script>
+  </head>
+
+  <h1>CSS Animation Blocks</h1>
+</html>
 ```
 
 #### groupOffset
@@ -265,10 +287,7 @@ const h1Block = new AnimationBlock({
       delayTime: 300
     }
   },
-  loop: {
-    count: 2,
-    endTime: '00:05.000'
-  }
+  loop: {}
 });
 
 const mainBlock = new AnimationBlock({
@@ -277,7 +296,10 @@ const mainBlock = new AnimationBlock({
   }
 }, {
   defaults: {},
-  loop: {}
+  loop: {
+    count: 2,
+    endTime: '00:05.000'
+  }
 });
 
 mainBlock.start();
